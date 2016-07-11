@@ -11,8 +11,8 @@ export PARTICLE="$1"
 export REGION="$2"
 
 
-export TESTRUN="Y"
-# export TESTRUN="N"
+# export TESTRUN="Y"
+export TESTRUN="N"
 
 # =====================================
 # Set correct paths to Ntuples
@@ -23,17 +23,17 @@ NTUPLEPATH="${CMSSW_BASE}/src/NTuples/"
 # =====================================
 #### LOW PT RUNS
 
-export HIGHPT="N"
+# export HIGHPT="N"
 
-ELECTRONNTUP="Ntup_01June_DoubleElectron.root"
-PHOTONNTUP="Ntup_01June_DoublePhoton.root"
+# ELECTRONNTUP="Ntup_01June_DoubleElectron.root"
+# PHOTONNTUP="Ntup_01June_DoublePhoton.root"
 
-# Small sample for quick iterations (comment out for full set of plots)
-# ELECTRONNTUP="SampleNtup_01June_electrons.root"
-PHOTONNTUP="SampleNtup_15June_photons_lowpt_mediumsized.root"
+# # Small sample for quick iterations (comment out for full set of plots)
+# # ELECTRONNTUP="SampleNtup_01June_electrons.root"
+# PHOTONNTUP="SampleNtup_15June_photons_lowpt_mediumsized.root"
 
-PHOTONTRAINING="before05Jun_photonConfig_results.root"
-ELECTRONTRAINING="before05Jun_electronConfig_results.root"
+# PHOTONTRAINING="before05Jun_photonConfig_results.root"
+# ELECTRONTRAINING="before05Jun_electronConfig_results.root"
 
 
 # =====================================
@@ -63,14 +63,47 @@ ELECTRONTRAINING="before05Jun_electronConfig_results.root"
 
 
 # =====================================
+#### 25 June runs
+
+# ------------------------------
+# Low pt spectrum
+
+# export HIGHPT="N"
+
+# export FLATNTUPLE=$NTUPLEPATH/Ntup_Jun22_lowpt_testing_sample.root
+
+# PHOTONTRAINING="Config_photon_lowpt_Jun25_results.root"
+# ELECTRONTRAINING="Config_electron_lowpt_Jun25_results.root"
+
+# Old vars
+# PHOTONTRAINING="Config_photon_lowpt_Jun25_OLDVARS_results.root"
+# ELECTRONTRAINING="Config_electron_lowpt_Jun25_OLDVARS_results.root"
+
+
+# ------------------------------
+# Full pt spectrum
+
+export HIGHPT="Y"
+
+export FLATNTUPLE=$NTUPLEPATH/Ntup_Jun22_fullpt_testing_sample.root
+
+# PHOTONTRAINING="Config_photon_fullpt_Jun25_results.root"
+# ELECTRONTRAINING="Config_electron_fullpt_Jun25_results.root"
+
+# # Old vars
+PHOTONTRAINING="Config_photon_fullpt_Jun25_OLDVARS_results.root"
+ELECTRONTRAINING="Config_electron_fullpt_Jun25_OLDVARS_results.root"
+
+
+# =====================================
 # Prepare the run
 
 if [ "$PARTICLE" = "electron" ]; then
-    export FLATNTUPLE=$NTUPLEPATH/$ELECTRONNTUP
+    # export FLATNTUPLE=$NTUPLEPATH/$ELECTRONNTUP
     export NTUPLETREE="ElectronTree"
     export TRAININGOUTPUT=$ELECTRONTRAINING
 elif [ "$PARTICLE" = "photon" ]; then
-    export FLATNTUPLE=$NTUPLEPATH/$PHOTONNTUP
+    # export FLATNTUPLE=$NTUPLEPATH/$PHOTONNTUP
     export NTUPLETREE="PhotonTree"
     export TRAININGOUTPUT=$PHOTONTRAINING
 fi

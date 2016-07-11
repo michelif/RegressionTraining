@@ -23,7 +23,7 @@ def main():
     # Instantiate the Config class which prints a .config file
     config = Config()
 
-    config.Name = 'electronConfig'
+    # config.Name = 'electronConfig'
 
     # filename of the input root file
     #root_file = 'FlatNtupFull_13May_SepTrees.root'
@@ -31,7 +31,16 @@ def main():
     #root_file = 'Ntup_20May_DoubleElectron.root'
     #root_file = 'Ntup_30May_DoublePhoton_somefailed.root'
     #root_file = 'Ntup_01June_DoubleElectron.root'
-    root_file = 'Ntup_05June_electrons_LowHighPt.root'
+    # root_file = 'Ntup_05June_electrons_LowHighPt.root'
+
+    # root_file = 'Ntup_Jun22_lowpt_training.root'
+    root_file = 'Ntup_Jun22_fullpt_training.root'
+
+    # out_filename = 'Config_24Jun_electron_lowpt_OLDVARS.config'
+    out_filename = 'Config_24Jun_electron_fullpt_OLDVARS.config'
+
+
+    config.Name = out_filename.replace('.config','')
 
     ntup_path = os.path.abspath('../../NTuples/')
 
@@ -171,7 +180,6 @@ def main():
     # Output config file
     ########################################
 
-    out_filename = 'electron_config.config'
     config.Parse( out_filename )
 
     # Test if the config file can be read by ROOT TEnv

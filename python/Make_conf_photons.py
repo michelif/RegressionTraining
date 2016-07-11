@@ -32,8 +32,18 @@ def main():
     #root_file = 'Ntup_30May_DoublePhoton_somefailed.root'
     #root_file = 'Ntup_01June_DoublePhoton.root'
     #root_file = 'Ntup_05June_photons_LowHighPt.root'
-    root_file = 'Ntup_12June_photons_lowhighpt.root'
+    # root_file = 'Ntup_12June_photons_lowhighpt.root'
     
+
+    # root_file = 'Ntup_Jun22_lowpt_training.root'
+    root_file = 'Ntup_Jun22_fullpt_training.root'
+
+    # out_filename = 'Config_24Jun_photon_lowpt_OLDVARS.config'
+    out_filename = 'Config_24Jun_photon_fullpt_OLDVARS.config'
+
+
+    config.Name = out_filename.replace('.config','')
+
     ntup_path = os.path.abspath('../../NTuples/')
 
     # For iterating:
@@ -182,7 +192,8 @@ def main():
     # Output config file
     ########################################
 
-    out_filename = 'photon_config.config'
+    # out_filename = 'photon_config.config'
+    # out_filename = 'Config_24Jun_photons_OLDVARS.config'
     config.Parse( out_filename )
 
     # Test if the config file can be read by ROOT TEnv

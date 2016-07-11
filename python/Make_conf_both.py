@@ -20,14 +20,14 @@ from time import strftime
 def main():
 
     # Small testing samples -- do NOT use these for plots!
-    # root_file = 'Ntup_Jun22_fullpt_testing_sample.root'
-    root_file = 'Ntup_Jun22_lowpt_testing_sample.root'
+    # fullpt_root_file = 'Ntup_Jun22_fullpt_testing_sample.root'
+    # lowpt_root_file  = 'Ntup_Jun22_lowpt_testing_sample.root'
 
     # Low + high pt sample
-    # root_file = 'Ntup_Jun22_fullpt_training.root'
+    fullpt_root_file = 'Ntup_Jun22_fullpt_training.root'
     
     # Only low pt sample
-    # root_file = 'Ntup_Jun22_lowpt_training.root'
+    lowpt_root_file = 'Ntup_Jun22_lowpt_training.root'
 
 
     ntup_path = os.path.join( os.environ['CMSSW_BASE'], 'src/NTuples' )
@@ -39,222 +39,396 @@ def main():
 
 
 
-    for particle in [ 'electron', 'photon' ]:
+    ########################################
+    # BASE CONFIG - This is low pt electrons
+    #   Configs for photons and and other pt ranges are created by altering this one
+    ########################################
 
-        # Instantiate the Config class which prints a .config file
-        config = Config()
+    # Instantiate the Config class which prints a .config file
+    base_config = Config()
 
-        config.Name       = 'Config_' + particle + '_' + datestr
+    base_config.Name       = 'Config_electron_lowpt_' + datestr
 
-        config.InputFiles = physical_path( root_file )
-        config.Tree       = 'een_analyzer/{0}Tree'.format( particle.capitalize() )
-
-
-        ########################################
-        # BDT settings
-        ########################################
-
-        config.Options = [
-            "MinEvents=200",
-            "Shrinkage=0.1",
-            "NTrees=1000",
-            "MinSignificance=5.0",
-            "EventWeight=max( min(1,exp(-(genPt-50)/50)), 0.1 )", # <-- What to do?
-            ]
-
-        config.Target           = "genEnergy / ( scRawEnergy + scPreshowerEnergy )"
-        config.TargetError      = "1.253*abs( BDTresponse - genEnergy / ( scRawEnergy + scPreshowerEnergy ) )"
-        config.HistoConfig      = "jobs/dummy_Histo.config"
-        
-        config.CutBase          = "eventNumber%2==0"
-        config.CutEB            = "scIsEB"
-        config.CutEE            = "!scIsEB"
-        config.CutError         = "(eventNumber%2!=0) && (((eventNumber-1)/2)%4==3)"
-
-        # Add an additional cut so that the regression is fast
-        # NtupIDcut = 10000
-        # config.CutBase  += ' && (NtupID<={0})'.format( NtupIDcut )
-        # config.CutError += ' && (NtupID<={0})'.format( NtupIDcut )
-        # config.CutComb  += ' && (NtupID<={0})'.format( NtupIDcut )
+    base_config.InputFiles = physical_path( lowpt_root_file )
+    base_config.Tree       = 'een_analyzer/ElectronTree'
 
 
-        ########################################
-        # Order tree branches
-        ########################################
+    ########################################
+    # BDT settings
+    ########################################
 
-        common_vars = [
+    base_config.Options = [
+        "MinEvents=200",
+        "Shrinkage=0.1",
+        "NTrees=1000",
+        "MinSignificance=5.0",
+        "EventWeight=max( min(1,exp(-(genPt-50)/50)), 0.1 )", # <-- What to do?
+        ]
 
-            # ======================================
-            # Common variables
+    base_config.Target           = "genEnergy / ( scRawEnergy + scPreshowerEnergy )"
+    base_config.TargetError      = "1.253*abs( BDTresponse - genEnergy / ( scRawEnergy + scPreshowerEnergy ) )"
+    base_config.HistoConfig      = "jobs/dummy_Histo.config"
+    
+    base_config.CutBase          = "eventNumber%2==0"
+    base_config.CutEB            = "scIsEB"
+    base_config.CutEE            = "!scIsEB"
+    base_config.CutError         = "(eventNumber%2!=0) && (((eventNumber-1)/2)%4==3)"
 
-            'pt',
-            # 'nVtx',          # rho should be enough information for the BDT
-            'scRawEnergy',
-            # 'scEta',         # Requires alignment information; use crystal number of the seed instead
-            # 'scPhi',         # Requires alignment information; use crystal number of the seed instead
-            'scEtaWidth',
-            'scPhiWidth',
-            'scSeedRawEnergy/scRawEnergy',
-            'hadronicOverEm',
-            'rhoValue',
-            'delEtaSeed',
-            'delPhiSeed',
-
-
-            # ======================================
-            # Showershape variables
-
-            # Use full 5x5 instead
-            # 'r9',
-            # 'eHorizontal',
-            # 'eVertical',
-            # 'sigmaIetaIeta',
-            # 'sigmaIetaIphi',
-            # 'sigmaIphiIphi',
-            # 'e5x5',
-            # 'e3x3',
-            # 'eMax',
-            # 'e2nd',
-            # 'eTop',
-            # 'eBottom',
-            # 'eLeft',
-            # 'eRight',
-            # 'e2x5Max',
-            # 'e2x5Left',
-            # 'e2x5Right',
-            # 'e2x5Top',
-            # 'e2x5Bottom',
-
-            # Normalization to scRawEnergy necessary?
-
-            'full5x5_r9',
-            'full5x5_eHorizontal',
-            'full5x5_eVertical',
-            'full5x5_sigmaIetaIeta',
-            'full5x5_sigmaIetaIphi',
-            'full5x5_sigmaIphiIphi',
-            'full5x5_e5x5',
-            'full5x5_e3x3',
-            'full5x5_eMax',
-            'full5x5_e2nd',
-            'full5x5_eTop',
-            'full5x5_eBottom',
-            'full5x5_eLeft',
-            'full5x5_eRight',
-            'full5x5_e2x5Max',
-            'full5x5_e2x5Left',
-            'full5x5_e2x5Right',
-            'full5x5_e2x5Top',
-            'full5x5_e2x5Bottom',
+    # Add an additional cut so that the regression is fast
+    # NtupIDcut = 10000
+    # base_config.CutBase  += ' && (NtupID<={0})'.format( NtupIDcut )
+    # base_config.CutError += ' && (NtupID<={0})'.format( NtupIDcut )
+    # base_config.CutComb  += ' && (NtupID<={0})'.format( NtupIDcut )
 
 
-            # ======================================
-            # Saturation variables
+    ########################################
+    # Order tree branches
+    ########################################
 
-            'N_SATURATEDXTALS',
-            'seedIsSaturated',
-            'seedCrystalEnergy/scRawEnergy',
+    common_vars = [
 
+        # ======================================
+        # Common variables
 
-            # ======================================
-            # Cluster variables
-
-            'N_ECALClusters',
-            'clusterMaxDR',
-            'clusterMaxDRDPhi',
-            'clusterMaxDRDEta',
-            'clusterMaxDRRawEnergy',
-
-            'clusterRawEnergy[0]/scRawEnergy',
-            'clusterRawEnergy[1]/scRawEnergy',
-            'clusterRawEnergy[2]/scRawEnergy',
-            'clusterDPhiToSeed[0]',
-            'clusterDPhiToSeed[1]',
-            'clusterDPhiToSeed[2]',
-            'clusterDEtaToSeed[0]',
-            'clusterDEtaToSeed[1]',
-            'clusterDEtaToSeed[2]',
-
-            ]
+        'pt',
+        # 'nVtx',          # rho should be enough information for the BDT
+        'scRawEnergy',
+        # 'scEta',         # Requires alignment information; use crystal number of the seed instead
+        # 'scPhi',         # Requires alignment information; use crystal number of the seed instead
+        'scEtaWidth',
+        'scPhiWidth',
+        'scSeedRawEnergy/scRawEnergy',
+        'hadronicOverEm',
+        'rhoValue',
+        'delEtaSeed',
+        'delPhiSeed',
 
 
-        config.VariablesEB = common_vars + [
-            # 'cryEtaCoordinate',  # Requires alignment information; use crystal number of the seed instead
-            # 'cryPhiCoordinate',  # Requires alignment information; use crystal number of the seed instead
-            'iEtaCoordinate',
-            'iPhiCoordinate',
-            'iEtaMod5',
-            'iPhiMod2',
-            'iEtaMod20',
-            'iPhiMod20',
-            ]
+        # ======================================
+        # Showershape variables
 
-        config.VariablesEE = common_vars + [
-            # 'cryXCoordinate',  # Requires alignment information; use crystal number of the seed instead
-            # 'cryYCoordinate',  # Requires alignment information; use crystal number of the seed instead
-            'iXCoordinate',
-            'iYCoordinate',
-            'scPreshowerEnergy/scRawEnergy',
-            'preshowerEnergyPlane1/scRawEnergy',
-            'preshowerEnergyPlane2/scRawEnergy',
-            ]
+        # Use full 5x5 instead
+        # 'r9',
+        # 'eHorizontal',
+        # 'eVertical',
+        # 'sigmaIetaIeta',
+        # 'sigmaIetaIphi',
+        # 'sigmaIphiIphi',
+        # 'e5x5',
+        # 'e3x3',
+        # 'eMax',
+        # 'e2nd',
+        # 'eTop',
+        # 'eBottom',
+        # 'eLeft',
+        # 'eRight',
+        # 'e2x5Max',
+        # 'e2x5Left',
+        # 'e2x5Right',
+        # 'e2x5Top',
+        # 'e2x5Bottom',
 
+        # Normalization to scRawEnergy necessary?
 
-        print 'Using the following branches for EE:'
-        print '    ' + '\n    '.join( config.VariablesEE )
-        print 'Using the following branches for EB:'
-        print '    ' + '\n    '.join( config.VariablesEB )
-
-
-        ########################################
-        # Ep combination
-        ########################################
-
-        # Only do the combination for the electron
-        if particle == 'electron':
-
-            config.DoCombine        = "True"
-
-            config.TargetComb       = "( genEnergy - ( scRawEnergy + scPreshowerEnergy )*BDTresponse ) / ( trkMomentum - ( scRawEnergy + scPreshowerEnergy )*BDTresponse )"
-            config.CutComb          = "(eventNumber%2!=0) && (((eventNumber-1)/2)%4!=3)"
-
-            config.VariablesComb = [
-                '( scRawEnergy + scPreshowerEnergy ) * BDTresponse',
-                'BDTerror/BDTresponse',
-                'trkMomentum',
-                'trkMomentumRelError',
-                'BDTerror/BDTresponse/trkMomentumRelError',
-                '( scRawEnergy + scPreshowerEnergy )*BDTresponse/trkMomentum',
-                ( '( scRawEnergy + scPreshowerEnergy )*BDTresponse/trkMomentum  *' +
-                  'sqrt( BDTerror/BDTresponse*BDTerror/BDTresponse + trkMomentumRelError*trkMomentumRelError)' ),
-                'eleEcalDriven',
-                'eleTrackerDriven',
-                'eleClass',
-                'scIsEB',
-                ]
-        
-        else:
-            config.DoCombine        = "False"
+        'full5x5_r9',
+        'full5x5_eHorizontal',
+        'full5x5_eVertical',
+        'full5x5_sigmaIetaIeta',
+        'full5x5_sigmaIetaIphi',
+        'full5x5_sigmaIphiIphi',
+        'full5x5_e5x5',
+        'full5x5_e3x3',
+        'full5x5_eMax',
+        'full5x5_e2nd',
+        'full5x5_eTop',
+        'full5x5_eBottom',
+        'full5x5_eLeft',
+        'full5x5_eRight',
+        'full5x5_e2x5Max',
+        'full5x5_e2x5Left',
+        'full5x5_e2x5Right',
+        'full5x5_e2x5Top',
+        'full5x5_e2x5Bottom',
 
 
-        ########################################
-        # Output
-        ########################################
+        # ======================================
+        # Saturation variables
 
-        # Print all branches as a check
-        print "\nAll branches in root file:"
-        Read_branches_from_rootfile( physical_path(root_file) , config.Tree )
+        'N_SATURATEDXTALS',
+        'seedIsSaturated',
+        'seedCrystalEnergy/scRawEnergy',
 
-        config.Parse()
 
-        # # Test if the config file can be read by ROOT TEnv
-        # print '\nReading in {0} and trying ROOT.TEnv( ..., 0 ):'.format( out_filename )
-        # I_TEnv = ROOT.TEnv()
-        # I_TEnv.ReadFile( out_filename, 0 )
-        # I_TEnv.Print()
-        # print 'Exited normally'
-        # print '='*70
-        # print
+        # ======================================
+        # Cluster variables
+
+        'N_ECALClusters',
+        'clusterMaxDR',
+        'clusterMaxDRDPhi',
+        'clusterMaxDRDEta',
+        'clusterMaxDRRawEnergy',
+
+        'clusterRawEnergy[0]/scRawEnergy',
+        'clusterRawEnergy[1]/scRawEnergy',
+        'clusterRawEnergy[2]/scRawEnergy',
+        'clusterDPhiToSeed[0]',
+        'clusterDPhiToSeed[1]',
+        'clusterDPhiToSeed[2]',
+        'clusterDEtaToSeed[0]',
+        'clusterDEtaToSeed[1]',
+        'clusterDEtaToSeed[2]',
+
+        ]
+
+
+    base_config.VariablesEB = common_vars + [
+        # 'cryEtaCoordinate',  # Requires alignment information; use crystal number of the seed instead
+        # 'cryPhiCoordinate',  # Requires alignment information; use crystal number of the seed instead
+        'iEtaCoordinate',
+        'iPhiCoordinate',
+        'iEtaMod5',
+        'iPhiMod2',
+        'iEtaMod20',
+        'iPhiMod20',
+        ]
+
+    base_config.VariablesEE = common_vars + [
+        # 'cryXCoordinate',  # Requires alignment information; use crystal number of the seed instead
+        # 'cryYCoordinate',  # Requires alignment information; use crystal number of the seed instead
+        'iXCoordinate',
+        'iYCoordinate',
+        'scPreshowerEnergy/scRawEnergy',
+        'preshowerEnergyPlane1/scRawEnergy',
+        'preshowerEnergyPlane2/scRawEnergy',
+        ]
+
+
+    # print 'Using the following branches for EE:'
+    # print '    ' + '\n    '.join( base_config.VariablesEE )
+    # print 'Using the following branches for EB:'
+    # print '    ' + '\n    '.join( base_config.VariablesEB )
+
+
+    ########################################
+    # Ep combination
+    ########################################
+
+    # Only do the combination for the electron
+    base_config.DoCombine        = "True"
+
+    base_config.TargetComb       = "( genEnergy - ( scRawEnergy + scPreshowerEnergy )*BDTresponse ) / ( trkMomentum - ( scRawEnergy + scPreshowerEnergy )*BDTresponse )"
+    base_config.CutComb          = "(eventNumber%2!=0) && (((eventNumber-1)/2)%4!=3)"
+
+    base_config.VariablesComb = [
+        '( scRawEnergy + scPreshowerEnergy ) * BDTresponse',
+        'BDTerror/BDTresponse',
+        'trkMomentum',
+        'trkMomentumRelError',
+        'BDTerror/BDTresponse/trkMomentumRelError',
+        '( scRawEnergy + scPreshowerEnergy )*BDTresponse/trkMomentum',
+        ( '( scRawEnergy + scPreshowerEnergy )*BDTresponse/trkMomentum  *' +
+          'sqrt( BDTerror/BDTresponse*BDTerror/BDTresponse + trkMomentumRelError*trkMomentumRelError)' ),
+        'eleEcalDriven',
+        'eleTrackerDriven',
+        'eleClass',
+        'scIsEB',
+        ]
+
+
+
+
+    ########################################
+    # Output
+    ########################################
+
+    # lowpt electrons - this is simply the base config defined above
+    base_config.Parse()
+
+    # fullpt electrons - only change the root file
+    base_config.Name       = 'Config_electron_fullpt_' + datestr
+    base_config.InputFiles = physical_path( fullpt_root_file )
+    base_config.Parse()
+
+    # lowpt photons
+    base_config.Name       = 'Config_photon_lowpt_' + datestr
+    base_config.InputFiles = physical_path( lowpt_root_file )
+    base_config.Tree       = 'een_analyzer/PhotonTree'
+    base_config.DoCombine  = "False"
+    base_config.Parse()
+
+    # fullpt photons
+    base_config.Name       = 'Config_photon_fullpt_' + datestr
+    base_config.InputFiles = physical_path( fullpt_root_file )
+    base_config.Tree       = 'een_analyzer/PhotonTree'
+    base_config.DoCombine  = "False"
+    base_config.Parse()
+
+
+
+    ########################################
+    # OLD VARIABLES
+    ########################################
+
+    # Remove the max( ..., 0.1, ) from the eventweight
+    base_config.Options = [
+        "MinEvents=200",
+        "Shrinkage=0.1",
+        "NTrees=1000",
+        "MinSignificance=5.0",
+        "EventWeight=min(1,exp(-(genPt-50)/50))",
+        ]
+
+
+    # lowpt electrons
+    base_config.Name       = 'Config_electron_lowpt_' + datestr + '_OLDVARS'
+    base_config.InputFiles = physical_path( lowpt_root_file )
+    base_config.Tree       = 'een_analyzer/ElectronTree'
+    base_config.DoCombine  = "True"
+
+    OLD_common_electron_vars = [
+        'nVtx',
+        'scRawEnergy',
+        'scEta',
+        'scPhi',
+        'scEtaWidth',
+        'scPhiWidth',
+        'r9',
+        'scSeedRawEnergy/scRawEnergy',
+        'eMax',
+        'e2nd',
+        'eHorizontal',  # 'scSeedLeftRightAsym',
+        'eVertical',    # 'scSeedTopBottomAsym',
+        'sigmaIetaIeta',
+        'sigmaIetaIphi',
+        'sigmaIphiIphi',
+        'N_ECALClusters',
+        'clusterMaxDR',
+        'clusterMaxDRDPhi',
+        'clusterMaxDRDEta',
+        'clusterMaxDRRawEnergy/scRawEnergy',
+
+        'clusterRawEnergy[0]/scRawEnergy',
+        'clusterRawEnergy[1]/scRawEnergy',
+        'clusterRawEnergy[2]/scRawEnergy',
+        'clusterDPhiToSeed[0]',
+        'clusterDPhiToSeed[1]',
+        'clusterDPhiToSeed[2]',
+        'clusterDEtaToSeed[0]',
+        'clusterDEtaToSeed[1]',
+        'clusterDEtaToSeed[2]',
+        ]
+
+    base_config.VariablesEB = OLD_common_electron_vars + [
+        'cryEtaCoordinate',
+        'cryPhiCoordinate',
+        'iEtaCoordinate',
+        'iPhiCoordinate',
+        # 'scSeedCryEta',
+        # 'scSeedCryPhi',
+        # 'scSeedCryIetaV2',
+        # 'scSeedCryIphiV2',
+        ]
+
+    base_config.VariablesEE = OLD_common_electron_vars + [
+        'scPreshowerEnergy/scRawEnergy',
+        # 'scSeedCryIxV2',
+        # 'scSeedCryIyV2',
+        'iXCoordinate',
+        'iYCoordinate',
+        ]
+
+    base_config.Parse()
+
+    # fullpt oldvars
+    base_config.Name       = 'Config_electron_fullpt_' + datestr + '_OLDVARS'
+    base_config.InputFiles = physical_path( fullpt_root_file )
+    base_config.Parse()
+
+
+    # lowpt photons
+    base_config.Name       = 'Config_photon_lowpt_' + datestr + '_OLDVARS'
+    base_config.InputFiles = physical_path( lowpt_root_file )
+    base_config.Tree       = 'een_analyzer/PhotonTree'
+    base_config.DoCombine  = "False"
+
+    OLD_common_photon_vars = [
+        'nVtx',
+        'scRawEnergy',
+        # 'scEta',
+        # 'scPhi',
+        'scEtaWidth',
+        'scPhiWidth',
+        'r9',
+        'scSeedRawEnergy/scRawEnergy',
+        # 'scSeedLeftRightAsym',
+        # 'scSeedTopBottomAsym',
+        'sigmaIetaIeta',
+        'sigmaIetaIphi',
+        'sigmaIphiIphi',
+        'N_ECALClusters',        
+
+        'hadronicOverEm',
+        'rhoValue',
+        'delEtaSeed',
+        'delPhiSeed',
+
+        'e3x3/e5x5',
+        'eMax/e5x5',
+        'e2nd/e5x5',
+        'eTop/e5x5',
+        'eBottom/e5x5',
+        'eLeft/e5x5',
+        'eRight/e5x5',
+        'e2x5Max/e5x5',
+        'e2x5Left/e5x5',
+        'e2x5Right/e5x5',
+        'e2x5Top/e5x5',
+        'e2x5Bottom/e5x5',
+        ]
+
+    base_config.VariablesEB = OLD_common_photon_vars + [
+        'e5x5/scSeedRawEnergy',
+        'iEtaCoordinate',
+        'iPhiCoordinate',
+        'iEtaMod5',
+        'iPhiMod2',
+        'iEtaMod20',
+        'iPhiMod20',
+        ]
+
+    base_config.VariablesEE = OLD_common_photon_vars + [
+        'scPreshowerEnergy/scRawEnergy',
+        'preshowerEnergyPlane1/scRawEnergy',
+        'preshowerEnergyPlane2/scRawEnergy',
+        'iXCoordinate',
+        'iYCoordinate',
+        ]
+
+    base_config.Parse()
+
+
+    # fullpt photons    
+    base_config.Name       = 'Config_photon_fullpt_' + datestr + '_OLDVARS'
+    base_config.InputFiles = physical_path( fullpt_root_file )
+    base_config.Parse()
+
+
+
+    # Print all branches as a check
+    print "\nAll branches in lowpt root file:"
+    Read_branches_from_rootfile( physical_path(lowpt_root_file) , base_config.Tree )
+
+    # # Test if the config file can be read by ROOT TEnv
+    # print '\nReading in {0} and trying ROOT.TEnv( ..., 0 ):'.format( out_filename )
+    # I_TEnv = ROOT.TEnv()
+    # I_TEnv.ReadFile( out_filename, 0 )
+    # I_TEnv.Print()
+    # print 'Exited normally'
+    # print '='*70
+    # print
+
+
+
 
 
 ########################################
