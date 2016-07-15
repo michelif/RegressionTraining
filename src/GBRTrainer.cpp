@@ -245,7 +245,7 @@ const GBRForest *GBRTrainer::TrainForest(int ntrees)
       
       for (int i=0; i<nvars; ++i) {
           float var = inputforms[i]->EvalInstance();
-          std::cout << "Printing variable " << fInputVars[i] << " = " << var << std::endl;
+	  //          std::cout << "Printing variable " << fInputVars[i] << " = " << var << std::endl;
           if(var!=var)// protection against nan
           {
               var = 0.;

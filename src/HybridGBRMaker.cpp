@@ -60,7 +60,8 @@ HybridGBRMaker::HybridGBRMaker():
     //m_trainerEBVar(NULL),
     //m_trainerEE(NULL),
     //m_trainerEEVar(NULL),
-    m_trainerComb(NULL),
+    //m_trainerComb(NULL),
+    //m_trainerComb(NULL),
     m_forestEBmean(NULL),
     m_forestEEmean(NULL),
     m_forestEBwidth(NULL),
@@ -117,11 +118,11 @@ void HybridGBRMaker::close()
         //delete m_trainerEE;
         //m_trainerEE = NULL;
     //}
-    if(m_trainerComb) 
-    {
-        delete m_trainerComb;
-        m_trainerComb = NULL;
-    }
+    // if(m_trainerComb) 
+    // {
+    //     delete m_trainerComb;
+    //     m_trainerComb = NULL;
+    // }
 
 }
 
