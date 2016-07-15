@@ -83,7 +83,11 @@ NTUPLEPATH="${CMSSW_BASE}/src/NTuples/"
 # ------------------------------
 # Full pt spectrum
 
-export HIGHPT="Y"
+# If "Y", 1 set of plots is made for 0 - 6500 GeV
+# export HIGHPT="Y"
+
+# If "Y", a set of plots is made for several pt ranges, up to 6500 GeV
+export USEGLOBALPTBINS="Y"
 
 export FLATNTUPLE=$NTUPLEPATH/Ntup_Jun22_fullpt_testing_sample.root
 
@@ -91,8 +95,17 @@ export FLATNTUPLE=$NTUPLEPATH/Ntup_Jun22_fullpt_testing_sample.root
 # ELECTRONTRAINING="Config_electron_fullpt_Jun25_results.root"
 
 # # Old vars
-PHOTONTRAINING="Config_photon_fullpt_Jun25_OLDVARS_results.root"
-ELECTRONTRAINING="Config_electron_fullpt_Jun25_OLDVARS_results.root"
+# PHOTONTRAINING="Config_photon_fullpt_Jun25_OLDVARS_results.root"
+# ELECTRONTRAINING="Config_electron_fullpt_Jun25_OLDVARS_results.root"
+
+# Training sets by Rafael
+# PHOTONTRAINING="Config_photon_Jun30_results.root"
+# ELECTRONTRAINING="Config_electron_Jun30_results.root"
+
+# Redone training sets by Rafael
+PHOTONTRAINING="Config_photon_Jul13_results.root"
+ELECTRONTRAINING="Config_electron_Jul13_results.root"
+
 
 
 # =====================================
@@ -118,7 +131,8 @@ export PLOTDIR_FULLPATH=$CMSSW_BASE/src/RegressionTraining/$PLOTDIR
 
 # TESTMACRO="$CMSSW_BASE/src/HiggsAnalysis/GBRLikelihood/macros/eregtestThomas.C"
 # TESTMACRO="$CMSSW_BASE/src/HiggsAnalysis/GBRLikelihood/macros/eregtest_inputbins.C"
-TESTMACRO="$CMSSW_BASE/src/HiggsAnalysis/GBRLikelihood/macros/scale_fitMean_RawCor.C"
+# TESTMACRO="$CMSSW_BASE/src/HiggsAnalysis/GBRLikelihood/macros/scale_fitMean_RawCor.C"
+TESTMACRO="$CMSSW_BASE/src/HiggsAnalysis/GBRLikelihood/macros/DrawBinPlots.C"
 
 
 # =====================================
