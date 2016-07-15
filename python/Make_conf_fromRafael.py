@@ -17,14 +17,14 @@ from time import strftime
 # Main
 ########################################
 
-def main():
+def Make_conf(Verbose=True):
 
     # Small testing samples -- do NOT use these for plots!
-    # root_file = 'Ntup_Jun22_fullpt_testing_sample.root'
+    root_file = 'Ntup_Jun22_fullpt_testing_sample.root'
     #    root_file = 'Ntup_Jun22_lowpt_testing_sample.root'
 
     # Low + high pt sample
-    root_file = 'Ntup_Jun22_fullpt_training.root'
+    # root_file = 'Ntup_Jun22_fullpt_training.root'
     
     # Only low pt sample
     # root_file = 'Ntup_Jun22_lowpt_training.root'
@@ -41,7 +41,7 @@ def main():
     physical_path = lambda input_root_file: os.path.join( ntup_path, input_root_file )
 
 
-
+    return_configs = []
     for particle in [ 'electron', 'photon' ]:
 
         # Instantiate the Config class which prints a .config file
@@ -207,11 +207,11 @@ def main():
             'preshowerEnergyPlane2/scRawEnergy',
             ]
 
-
-        print 'Using the following branches for EE:'
-        print '    ' + '\n    '.join( config.VariablesEE )
-        print 'Using the following branches for EB:'
-        print '    ' + '\n    '.join( config.VariablesEB )
+        if Verbose:
+            print 'Using the following branches for EE:'
+            print '    ' + '\n    '.join( config.VariablesEE )
+            print 'Using the following branches for EB:'
+            print '    ' + '\n    '.join( config.VariablesEB )
 
 
         ########################################
@@ -249,9 +249,10 @@ def main():
         # Output
         ########################################
 
-        # Print all branches as a check
-        print "\nAll branches in root file:"
-        Read_branches_from_rootfile( physical_path(root_file) , config.Tree )
+        if Verbose:
+            # Print all branches as a check
+            print "\nAll branches in root file:"
+            Read_branches_from_rootfile( physical_path(root_file) , config.Tree )
 
         config.Parse()
 
@@ -263,6 +264,10 @@ def main():
         # print 'Exited normally'
         # print '='*70
         # print
+
+        return_configs.append( config )
+
+    return return_configs
 
 
 ########################################
@@ -308,4 +313,4 @@ def Read_branches_from_rootfile( root_file, tree_gDirectory ):
 # End of Main
 ########################################
 if __name__ == "__main__":
-    main()
+    Make_conf()
