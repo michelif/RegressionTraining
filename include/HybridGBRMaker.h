@@ -75,7 +75,8 @@ class HybridGBRMaker
 
         bool m_doCombine;
 
-        GBRTrainer* m_trainerComb;
+        // GBRTrainer* m_trainerComb;
+       
         GBRForestD* m_forestEBmean;
         GBRForestD* m_forestEEmean;
         GBRForestD* m_forestEBwidth;
@@ -84,6 +85,11 @@ class HybridGBRMaker
         std::vector<std::string> m_variablesEE;
         std::vector<std::string> m_variablesComb;
         int m_ntrees;
+
+        // Added by Thomas
+        GBRForestD* m_forestCombmean;
+        GBRForestD* m_forestCombwidth;
+        std::string m_cutComb;
 
 };
 

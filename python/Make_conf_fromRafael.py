@@ -79,10 +79,10 @@ def Make_conf(Verbose=True):
         config.CutError         = "(eventNumber%2!=0) && (((eventNumber-1)/2)%4==3)"
 
         # Add an additional cut so that the regression is fast
-        # NtupIDcut = 10000
-        # config.CutBase  += ' && (NtupID<={0})'.format( NtupIDcut )
-        # config.CutError += ' && (NtupID<={0})'.format( NtupIDcut )
-        # config.CutComb  += ' && (NtupID<={0})'.format( NtupIDcut )
+        NtupIDcut = 2000
+        config.CutBase  += ' && (NtupID<={0})'.format( NtupIDcut )
+        config.CutError += ' && (NtupID<={0})'.format( NtupIDcut )
+        config.CutComb  += ' && (NtupID<={0})'.format( NtupIDcut )
 
 
         ########################################

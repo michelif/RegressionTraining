@@ -173,30 +173,37 @@ bool RegressionManager::makeRegression()
             if(!status)
                 break;
             // feed with variables
-            string variablesEB = it->variablesEB;
-            string variablesEE = it->variablesEE;
+            string variablesEB   = it->variablesEB;
+            string variablesEE   = it->variablesEE;
             string variablesComb = it->variablesComb;
+            
             vector<string> tokensEB;
             vector<string> tokensEE;
             vector<string> tokensComb;
+            
             tokenize(variablesEB, tokensEB, ":");
             tokenize(variablesEE, tokensEE, ":");
             tokenize(variablesComb, tokensComb, ":");
+            
             vector<string>::iterator itv  = tokensEB.begin();
             vector<string>::iterator itvE = tokensEB.end();
             for(;itv!=itvE;++itv)
                 regMaker->addVariableEB(*itv);
+            
             itv  = tokensEE.begin();
             itvE = tokensEE.end();
             for(;itv!=itvE;++itv)
                 regMaker->addVariableEE(*itv);
+            
             itv  = tokensComb.begin();
             itvE = tokensComb.end();
             for(;itv!=itvE;++itv)
                 regMaker->addVariableComb(*itv);
+            
             tokensEB.clear();
             tokensEE.clear();
             tokensComb.clear();
+
             // specify target, cuts, fill options
             regMaker->addTarget(it->target, it->targetComb);
             //regMaker->prepareTraining(it->cutBase, it->cutComb, it->cutEB, it->cutEE, it->options);

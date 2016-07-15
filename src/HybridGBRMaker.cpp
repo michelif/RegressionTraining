@@ -65,7 +65,11 @@ HybridGBRMaker::HybridGBRMaker():
     m_forestEEmean(NULL),
     m_forestEBwidth(NULL),
     m_forestEEwidth(NULL),
-    m_ntrees(10000)
+    m_ntrees(10000),
+
+    // Added by Thomas
+    m_forestCombmean(NULL),
+    m_forestCombwidth(NULL)
 /*****************************************************************/
 {
 }
@@ -135,7 +139,7 @@ bool HybridGBRMaker::init(const string& name,
     m_doCombine = doCombine;
 
     // create GBR trainer
-    m_trainerComb = new GBRTrainer();
+    // m_trainerComb = new GBRTrainer();
 
     // fill GBRtrainer with TTrees
     m_tree = new TChain(treeName.c_str());
@@ -159,7 +163,7 @@ bool HybridGBRMaker::init(const string& name,
             cout << "FATAL: HybridGBRMaker::init(): Cannot find regression tree " << treeName << " in " << *it << "\n";
             return false;
         }
-        m_trainerComb->AddTree(tree);
+        // m_trainerComb->AddTree(tree);
         m_tree->Add(it->c_str());
         m_trees.push_back(tree);
     }
@@ -200,14 +204,21 @@ void HybridGBRMaker::addVariableEE(const string& name)
 void HybridGBRMaker::addVariableComb(const string& name)
 /*****************************************************************/
 {
-    if(!m_trainerComb)
-    {
-        cout << "ERROR: HybridGBRMaker::addVariable(): Cannot add variable: trainer doesn't exist\n";
-        return;
-    }
     m_variablesComb.push_back(name);
-    m_trainerComb->AddInputVar(name);
 }
+
+// /*****************************************************************/
+// void HybridGBRMaker::addVariableComb(const string& name)
+// /*****************************************************************/
+// {
+//     if(!m_trainerComb)
+//     {
+//         cout << "ERROR: HybridGBRMaker::addVariable(): Cannot add variable: trainer doesn't exist\n";
+//         return;
+//     }
+//     m_variablesComb.push_back(name);
+//     m_trainerComb->AddInputVar(name);
+// }
 
 
 /*****************************************************************/
@@ -215,13 +226,13 @@ void HybridGBRMaker::addTarget(const string& target, const string& targetComb)
 /*****************************************************************/
 {
     m_target = target;
-    if(!m_trainerComb)
-    {
-        cout << "ERROR: HybridGBRMaker::addVariable(): Cannot add variable: trainer doesn't exist\n";
-        return;
-    }
+    // if(!m_trainerComb)
+    // {
+    //     cout << "ERROR: HybridGBRMaker::addVariable(): Cannot add variable: trainer doesn't exist\n";
+    //     return;
+    // }
     m_targetComb = targetComb;
-    m_trainerComb->SetTargetVar(m_targetComb);
+    // m_trainerComb->SetTargetVar(m_targetComb);
 }
 
 
@@ -709,14 +720,67 @@ void HybridGBRMaker::runEE(const string& cutBase, const string& cutEE, const str
 
 }
 
+
 /*****************************************************************/
-void HybridGBRMaker::runComb(const string& cutComb, const string& options)
+void HybridGBRMaker::runComb( const string& cutComb, const string& options)
 /*****************************************************************/
 {
-    TCut cutCombination(cutComb.c_str());
-    cout << "INFO: Cuts for combination training    = '" << string(cutCombination) << "'\n";
-    // set cut for training events
-    m_trainerComb->SetTrainingCut(string(cutCombination)); 
+
+    // add BDT response and errors to the tree
+    cout << "INFO: filling BDT response in tree\n";
+    GBRApply gbrApply;
+
+    // for(unsigned int t=0; t<m_trees.size(); t++)
+    //     gbrApply.ApplyAsFriendTransform(m_trees[t], m_forestEBmean, m_forestEEmean,
+    //             m_variablesEB, m_variablesEE,
+    //             m_cutEB, m_cutEE,
+    //             "BDTresponse",
+    //             0.2, 2.);
+
+    // // add BDT error response to the tree
+    // cout << "INFO: filling BDT error in tree\n";
+    // for(unsigned int t=0; t<m_trees.size(); t++)
+    //     gbrApply.ApplyAsFriendTransform(m_trees[t], m_forestEBwidth, m_forestEEwidth,
+    //             m_variablesEB, m_variablesEE,
+    //             m_cutEB, m_cutEE,
+    //             "BDTerror",
+    //             0.0002, 0.5);
+
+
+    gbrApply.ApplyAsFriendTransform( m_tree, m_forestEBmean, m_forestEEmean,
+            m_variablesEB, m_variablesEE,
+            m_cutEB, m_cutEE,
+            "BDTresponse",
+            0.2, 2.);
+
+    // add BDT error response to the tree
+    cout << "INFO: filling BDT error in tree\n";
+    gbrApply.ApplyAsFriendTransform( m_tree, m_forestEBwidth, m_forestEEwidth,
+            m_variablesEB, m_variablesEE,
+            m_cutEB, m_cutEE,
+            "BDTerror",
+            0.0002, 0.5);
+
+
+    //create RooRealVars for each input variable
+    RooArgList varsComb;
+    for (unsigned int ivar=0; ivar<m_variablesComb.size(); ++ivar)
+    {
+        RooRealVar* var = new RooRealVar(TString::Format("var_%i",ivar), m_variablesComb.at(ivar).c_str(), 0.);
+        varsComb.addOwned(*var);
+    }
+
+    //make list of input variable RooRealVars
+    RooArgList condvarsComb(varsComb);
+
+    //create RooRealVar for target
+    RooRealVar* targetvar  = new RooRealVar("targetvar", m_targetComb.c_str(), 1.);
+    //RooRealVar targetvar ("targetvar", m_target.c_str(), 1.);
+
+    //add target to full list
+    varsComb.addOwned(*targetvar);
+
+    // retrieve event weight
     // loop over options
     vector<string> optionTokens;
     tokenize(options, optionTokens, ":");
@@ -724,102 +788,309 @@ void HybridGBRMaker::runComb(const string& cutComb, const string& options)
     {
         vector<string> tagAndValue;
         tokenize(token, tagAndValue, "=");
+        string tag = tagAndValue[0];
+        string value = tagAndValue[1];
+        if(tag=="EventWeight")
+        {
+            m_weight = value;
+            cout << "INFO: EventWeight = " << value << "\n";
+        }
+    }
+
+    //RooRealVar for event weight 
+    TCut weight(m_weight.c_str());
+    RooRealVar weightvarComb("weightvar","",1.);
+
+
+    // // Define event cuts
+    // m_cutComb = cutComb;
+    // TCut cutCentral(cutBase.c_str());
+    // TCut cutEndcap(cutComb.c_str());
+    // cout << "INFO: Cuts for Comb training = '" << string(cutCentral && cutEndcap) << "'\n";
+    // // weight * cuts
+    // weightvarComb.SetTitle( (cutCentral && cutEndcap)*weight );
+
+    // Define event cuts -- Don't apply the cutBase of course
+    m_cutComb = cutComb;
+    // TCut cutCentral(cutBase.c_str());
+    TCut cutCombination(cutComb.c_str());
+    cout << "INFO: Cuts for Comb training = '" << string(cutCombination) << "'\n";
+    weightvarComb.SetTitle( cutCombination*weight );
+
+
+    //create RooDataSet from TChain
+    RooDataSet *hdataComb = RooTreeConvert::CreateDataSet("hdataComb", m_tree, varsComb, weightvarComb);   
+
+    //RooRealVars corresponding to regressed parameters (sigma, mean, left tail parameter, right tail parameter)
+    RooRealVar sigwidthtvarComb("sigwidthtvarComb","",0.01);
+    sigwidthtvarComb.setConstant(false);
+
+    RooRealVar sigmeantvarComb("sigmeantvarComb","",1.);
+    sigmeantvarComb.setConstant(false); 
+
+    RooRealVar signvarComb("signvarComb","",3.);
+    signvarComb.setConstant(false);       
+
+    RooRealVar sign2varComb("sign2varComb","",3.);
+    sign2varComb.setConstant(false);     
+
+    //define non-parametric functions for each regressed parameter
+    RooGBRFunctionFlex *sigwidthtfuncComb = new RooGBRFunctionFlex("sigwidthtfuncComb","");
+    RooGBRFunctionFlex *sigmeantfuncComb = new RooGBRFunctionFlex("sigmeantfuncComb","");
+    RooGBRFunctionFlex *signfuncComb = new RooGBRFunctionFlex("signfuncComb","");
+    RooGBRFunctionFlex *sign2funcComb = new RooGBRFunctionFlex("sign2funcComb","");
+    //RooGBRFunctionFlex sigwidthtfuncEB("sigwidthtfuncEB","");
+    //RooGBRFunctionFlex sigmeantfuncEB("sigmeantfuncEB","");
+    //RooGBRFunctionFlex signfuncEB("signfuncEB","");
+    //RooGBRFunctionFlex sign2funcEB("sign2funcEB","");
+
+    //define mapping of input variables to non-parametric functions (in this case trivial since all 4 functions depend on the same inputs, but this is not a requirement)
+    RooGBRTargetFlex *sigwidthtComb = new RooGBRTargetFlex("sigwidthtComb","",*sigwidthtfuncComb,sigwidthtvarComb,condvarsComb);  
+    RooGBRTargetFlex *sigmeantComb = new RooGBRTargetFlex("sigmeantComb","",*sigmeantfuncComb,sigmeantvarComb,condvarsComb);  
+    RooGBRTargetFlex *signtComb = new RooGBRTargetFlex("signtComb","",*signfuncComb,signvarComb,condvarsComb);  
+    RooGBRTargetFlex *sign2tComb = new RooGBRTargetFlex("sign2tComb","",*sign2funcComb,sign2varComb,condvarsComb);  
+    //RooGBRTargetFlex sigwidthtEB("sigwidthtEB","",sigwidthtfuncEB,sigwidthtvarEB,condvarsEB);  
+    //RooGBRTargetFlex sigmeantEB("sigmeantEB","",sigmeantfuncEB,sigmeantvarEB,condvarsEB);  
+    //RooGBRTargetFlex signtEB("signtEB","",signfuncEB,signvarEB,condvarsEB);  
+    //RooGBRTargetFlex sign2tEB("sign2tEB","",sign2funcEB,sign2varEB,condvarsEB);
+
+    //define list of mapped functions to regress
+    RooArgList tgtsComb;
+    tgtsComb.add(*sigwidthtComb);
+    tgtsComb.add(*sigmeantComb);
+    tgtsComb.add(*signtComb);
+    tgtsComb.add(*sign2tComb);  
+
+    //define transformations corresponding to parameter bounds for non-parametric outputs  
+    RooRealConstraint sigwidthlimComb("sigwidthlimComb","",*sigwidthtComb,0.0002,0.5);
+    RooRealConstraint sigmeanlimComb("sigmeanlimComb","",*sigmeantComb,0.2,2.0);
+    RooRealConstraint signlimComb("signlimComb","",*signtComb,1.01,5000.); 
+    RooRealConstraint sign2limComb("sign2limComb","",*sign2tComb,1.01,5000.); 
+
+    //define pdf, which depends on transformed outputs (and is intended to be treated as a conditional pdf over the
+    //regression inputs in this case)
+    //The actual pdf below is a double crystal ball, with crossover points alpha_1 and alpha_2 set constant, but all other
+    //parameters regressed
+    RooDoubleCBFast sigpdfComb("sigpdfComb","",*targetvar,sigmeanlimComb,sigwidthlimComb,RooConst(2.),signlimComb,RooConst(1.),sign2limComb);
+
+    //dummy variable
+    RooConstVar etermconst("etermconst","",0.);  
+
+    //dummy variable
+    RooRealVar r("r","",1.);
+    r.setConstant();
+
+    //define list of pdfs
+    std::vector<RooAbsReal*> vpdfComb;
+    vpdfComb.push_back(&sigpdfComb);  
+
+    //define list of training datasets
+    std::vector<RooAbsData*> vdataComb;
+    vdataComb.push_back(hdataComb);
+
+    RooHybridBDTAutoPdf trainerComb("bdtpdfdiffComb","",tgtsComb,etermconst,r,vdataComb,vpdfComb);
+
+
+    // set cut for training events
+    //m_trainerComb->SetTrainingCut(string(cutCombination)); 
+    // loop over options
+    for(const auto& token : optionTokens)
+    {
+        vector<string> tagAndValue;
+        tokenize(token, tagAndValue, "=");
         if(tagAndValue.size()!=2)
         {
-            cout << "ERROR: GBRMaker::prepareTraining(): option " << token << " cannot be processed. Should be of the form tag=value.\n";
+            cout << "ERROR: HybridGBRMaker::prepareTraining(): option " << token << " cannot be processed. Should be of the form tag=value.\n";
             continue;
         }
         string tag = tagAndValue[0];
         string value = tagAndValue[1];
         if(tag=="MinEvents")
         {
-            int minEvents = 0;
+            double minEvents = 0;
             fromString(minEvents, value);
-            m_trainerComb->SetMinEvents(minEvents);
+            std::vector<double> vMinEvents;
+            vMinEvents.push_back(minEvents);
+            trainerComb.SetMinWeights(vMinEvents);
             cout << "INFO: MinEvents = " << minEvents << "\n";
         }
         else if(tag=="Shrinkage")
         {
             float shrink = 0.;
             fromString(shrink, value);
-            m_trainerComb->SetShrinkage(shrink);
+            trainerComb.SetShrinkage(shrink);
             cout << "INFO: Shrinkage = " << shrink << "\n";
         }
         else if(tag=="MinSignificance")
         {
             float sig = 0.;
             fromString(sig, value);
-            m_trainerComb->SetMinCutSignificance(sig);
+            trainerComb.SetMinCutSignificance(sig);
             cout << "INFO: MinSignificance = " << sig << "\n";
         }
         else if(tag=="TransitionQuantile")
         {
             float trans = 0.;
             fromString(trans, value);
-            m_trainerComb->SetTransitionQuantile(trans);
+            trainerComb.SetTransitionQuantile(trans);
             cout << "INFO: TransitionQuantile = " << trans << "\n";
         }
         else if(tag=="NTrees")
         {
-            // already filled
-            cout << "INFO: NTrees = " << m_ntrees << "\n";
+            int ntrees= 0;
+            fromString(ntrees, value);
+            m_ntrees = ntrees;
+            cout << "INFO: NTrees = " << ntrees << "\n";
         }
         else if(tag=="RandomSeed")
         {
-            m_trainerComb->SetRandomSeed(value);
-            cout << "INFO: RandomSeed = " << value << "\n";
         }
         else if(tag=="EventWeight")
         {
-            m_trainerComb->SetEventWeight(value);
-            cout << "INFO: EventWeight = " << value << "\n";
+            // already filled, but do it again
+            m_weight = value;
         }
         else
         {
-            cout << "ERROR: HybridGBRMaker::runComb(): Unknown option " << tag << "\n";
-            cout << "ERROR: Possibilities are: MinEvents, Shrinkage, MinSignificance, TransitionQuantile, RandomSeed, EventWeight, NTrees\n";
+            cout << "ERROR: HybridGBRMaker::prepareTraining(): Unknown option " << tag << "\n";
+            cout << "ERROR: Possibilities are: MinEvents, Shrinkage, MinSignificance, TransitionQuantile, NTrees, EventWeight\n";
         }
     }
 
 
-    // add BDT response and errors to the tree
-    cout << "INFO: filling BDT response in tree\n";
-    GBRApply gbrApply;
-    for(unsigned int t=0; t<m_trees.size(); t++)
-        gbrApply.ApplyAsFriendTransform(m_trees[t], m_forestEBmean, m_forestEEmean,
-                m_variablesEB, m_variablesEE,
-                m_cutEB, m_cutEE,
-                "BDTresponse",
-                0.2, 2.);
-
-    // add BDT error response to the tree
-    cout << "INFO: filling BDT error in tree\n";
-    for(unsigned int t=0; t<m_trees.size(); t++)
-        gbrApply.ApplyAsFriendTransform(m_trees[t], m_forestEBwidth, m_forestEEwidth,
-                m_variablesEB, m_variablesEE,
-                m_cutEB, m_cutEE,
-                "BDTerror",
-                0.0002, 0.5);
+    // run
+    cout << "INFO: train BDT for Comb central value estimation\n";
+    trainerComb.TrainForest(m_ntrees);
+    // save workspace
+    RooWorkspace weregComb("wereg_comb");
+    weregComb.import(sigpdfComb);
 
 
-    // run training for combination
-    const GBRForest* forestComb = NULL;
-    cout << "INFO: train BDT for combination\n";
-    forestComb = m_trainerComb->TrainForest(m_ntrees);
-    delete m_trainerComb;
-    m_trainerComb = NULL;
-
-    // write GBRForest in output file
     TFile* fileOut = TFile::Open(m_fileOutName.c_str(), "UPDATE");
-    if(forestComb)
-        fileOut->WriteObject(forestComb, "CombinationWeight");
-    else
-        cout << "WARNING: HybridGBRMaker::runComb(): NULL comb forest\n";
-
     fileOut->WriteObject(&m_variablesComb, "varlistComb");
+    m_forestCombmean = new GBRForestD(*sigmeantComb->Forest());
+    m_forestCombwidth = new GBRForestD(*sigwidthtComb->Forest());
+    fileOut->WriteObject(m_forestCombmean,"CombCorrection");
+    fileOut->WriteObject(m_forestCombwidth,"CombUncertainty");
     fileOut->Close();
 
+    weregComb.writeToFile(m_fileOutName.c_str(), false);    
+
 }
+
+
+// /*****************************************************************/
+// void HybridGBRMaker::runComb(const string& cutComb, const string& options)
+// /*****************************************************************/
+// {
+//     TCut cutCombination(cutComb.c_str());
+//     cout << "INFO: Cuts for combination training    = '" << string(cutCombination) << "'\n";
+//     // set cut for training events
+//     m_trainerComb->SetTrainingCut(string(cutCombination)); 
+
+//     // loop over options
+//     vector<string> optionTokens;
+//     tokenize(options, optionTokens, ":");
+//     for(const auto& token : optionTokens)
+//     {
+//         vector<string> tagAndValue;
+//         tokenize(token, tagAndValue, "=");
+//         if(tagAndValue.size()!=2)
+//         {
+//             cout << "ERROR: GBRMaker::prepareTraining(): option " << token << " cannot be processed. Should be of the form tag=value.\n";
+//             continue;
+//         }
+//         string tag = tagAndValue[0];
+//         string value = tagAndValue[1];
+//         if(tag=="MinEvents")
+//         {
+//             int minEvents = 0;
+//             fromString(minEvents, value);
+//             m_trainerComb->SetMinEvents(minEvents);
+//             cout << "INFO: MinEvents = " << minEvents << "\n";
+//         }
+//         else if(tag=="Shrinkage")
+//         {
+//             float shrink = 0.;
+//             fromString(shrink, value);
+//             m_trainerComb->SetShrinkage(shrink);
+//             cout << "INFO: Shrinkage = " << shrink << "\n";
+//         }
+//         else if(tag=="MinSignificance")
+//         {
+//             float sig = 0.;
+//             fromString(sig, value);
+//             m_trainerComb->SetMinCutSignificance(sig);
+//             cout << "INFO: MinSignificance = " << sig << "\n";
+//         }
+//         else if(tag=="TransitionQuantile")
+//         {
+//             float trans = 0.;
+//             fromString(trans, value);
+//             m_trainerComb->SetTransitionQuantile(trans);
+//             cout << "INFO: TransitionQuantile = " << trans << "\n";
+//         }
+//         else if(tag=="NTrees")
+//         {
+//             // already filled
+//             cout << "INFO: NTrees = " << m_ntrees << "\n";
+//         }
+//         else if(tag=="RandomSeed")
+//         {
+//             m_trainerComb->SetRandomSeed(value);
+//             cout << "INFO: RandomSeed = " << value << "\n";
+//         }
+//         else if(tag=="EventWeight")
+//         {
+//             m_trainerComb->SetEventWeight(value);
+//             cout << "INFO: EventWeight = " << value << "\n";
+//         }
+//         else
+//         {
+//             cout << "ERROR: HybridGBRMaker::runComb(): Unknown option " << tag << "\n";
+//             cout << "ERROR: Possibilities are: MinEvents, Shrinkage, MinSignificance, TransitionQuantile, RandomSeed, EventWeight, NTrees\n";
+//         }
+//     }
+
+
+//     // add BDT response and errors to the tree
+//     cout << "INFO: filling BDT response in tree\n";
+//     GBRApply gbrApply;
+//     for(unsigned int t=0; t<m_trees.size(); t++)
+//         gbrApply.ApplyAsFriendTransform(m_trees[t], m_forestEBmean, m_forestEEmean,
+//                 m_variablesEB, m_variablesEE,
+//                 m_cutEB, m_cutEE,
+//                 "BDTresponse",
+//                 0.2, 2.);
+
+//     // add BDT error response to the tree
+//     cout << "INFO: filling BDT error in tree\n";
+//     for(unsigned int t=0; t<m_trees.size(); t++)
+//         gbrApply.ApplyAsFriendTransform(m_trees[t], m_forestEBwidth, m_forestEEwidth,
+//                 m_variablesEB, m_variablesEE,
+//                 m_cutEB, m_cutEE,
+//                 "BDTerror",
+//                 0.0002, 0.5);
+
+
+//     // run training for combination
+//     const GBRForest* forestComb = NULL;
+//     cout << "INFO: train BDT for combination\n";
+//     forestComb = m_trainerComb->TrainForest(m_ntrees);
+//     delete m_trainerComb;
+//     m_trainerComb = NULL;
+
+//     // write GBRForest in output file
+//     TFile* fileOut = TFile::Open(m_fileOutName.c_str(), "UPDATE");
+//     if(forestComb)
+//         fileOut->WriteObject(forestComb, "CombinationWeight");
+//     else
+//         cout << "WARNING: HybridGBRMaker::runComb(): NULL comb forest\n";
+
+//     fileOut->WriteObject(&m_variablesComb, "varlistComb");
+//     fileOut->Close();
+
+// }
 
 
 
