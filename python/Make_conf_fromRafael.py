@@ -19,19 +19,18 @@ from time import strftime
 
 def Make_conf(Verbose=True):
 
-    # Small testing samples -- do NOT use these for plots!
-    root_file = 'Ntup_Jun22_fullpt_testing_sample.root'
-    #    root_file = 'Ntup_Jun22_lowpt_testing_sample.root'
+    root_file = 'Ntup_Jul15_fullpt_training.root'
 
+    # Small testing samples -- do NOT use these for plots!
+    #    root_file = 'Ntup_Jun22_lowpt_testing_sample.root'
     # Low + high pt sample
-    # root_file = 'Ntup_Jun22_fullpt_training.root'
-    
+    # root_file = 'Ntup_Jun22_fullpt_training.root'    
     # Only low pt sample
     # root_file = 'Ntup_Jun22_lowpt_training.root'
 
 
-    # ntup_path = os.path.join( '/data/userdata/rclsa/ElectronTrees/' )
-    ntup_path = os.path.join( os.environ['CMSSW_BASE'], 'src/NTuples' )
+    ntup_path = os.path.join( '/data/userdata/rclsa/ElectronTrees/' )
+ #   ntup_path = os.path.join( os.environ['CMSSW_BASE'], 'src/NTuples' )
 
 
     datestr = strftime( '%b%d' )
@@ -67,22 +66,25 @@ def Make_conf(Verbose=True):
             ]
 
         config.Target           = "genEnergy / ( scRawEnergy + scPreshowerEnergy )"
-        config.TargetError      = "1.253*abs( BDTresponse - genEnergy / ( scRawEnergy + scPreshowerEnergy ) )"
+        #        config.TargetError      = "1.253*abs( BDTresponse - genEnergy / ( scRawEnergy + scPreshowerEnergy ) )"
         config.HistoConfig      = "jobs/dummy_Histo.config"
         
         # config.CutBase          = "eventNumber%2==0"
         # Remove 2/7th of the events (reduces training from 70% to 50%)
-        config.CutBase          = "eventNumber%2==0 && ( (eventNumber/2)%7==0 || (eventNumber/2)%7==1 )"
+        if particle == 'photon':
+            config.CutBase          = "eventNumber%4 < 3"
+        else:
+            config.CutBase          = "eventNumber%2==0"
 
         config.CutEB            = "scIsEB"
         config.CutEE            = "!scIsEB"
-        config.CutError         = "(eventNumber%2!=0) && (((eventNumber-1)/2)%4==3)"
+        #        config.CutError         = "(eventNumber%2!=0) && (((eventNumber-1)/2)%4==3)"
 
         # Add an additional cut so that the regression is fast
-        NtupIDcut = 2000
-        config.CutBase  += ' && (NtupID<={0})'.format( NtupIDcut )
-        config.CutError += ' && (NtupID<={0})'.format( NtupIDcut )
-        config.CutComb  += ' && (NtupID<={0})'.format( NtupIDcut )
+        # NtupIDcut = 2000
+        # config.CutBase  += ' && (NtupID<={0})'.format( NtupIDcut )
+        # config.CutError += ' && (NtupID<={0})'.format( NtupIDcut )
+        # config.CutComb  += ' && (NtupID<={0})'.format( NtupIDcut )
 
 
         ########################################
@@ -96,12 +98,13 @@ def Make_conf(Verbose=True):
 
             # 'pt',            # RCLSA: you cannot use the result of the previous training for the new one
             # 'nVtx',          # rho should be enough information for the BDT
-            'scRawEnergy',
             # 'scEta',         # Requires alignment information; use crystal number of the seed instead
             # 'scPhi',         # Requires alignment information; use crystal number of the seed instead
+            #            'scSeedRawEnergy/scRawEnergy',  # RCLSA: Redundant with the one below
+
+            'scRawEnergy',
             'scEtaWidth',
             'scPhiWidth',
-            #            'scSeedRawEnergy/scRawEnergy',  # RCLSA: Redundant with the one below
             'full5x5_e5x5/scRawEnergy',
             'hadronicOverEm',
             'rhoValue',
@@ -224,21 +227,27 @@ def Make_conf(Verbose=True):
             config.DoCombine        = "True"
 
             config.TargetComb       = "( genEnergy - ( scRawEnergy + scPreshowerEnergy )*BDTresponse ) / ( trkMomentum - ( scRawEnergy + scPreshowerEnergy )*BDTresponse )"
-            config.CutComb          = "(eventNumber%2!=0) && (((eventNumber-1)/2)%4!=3)"
+            config.CutComb          = "(eventNumber%2==1)"
 
             config.VariablesComb = [
                 '( scRawEnergy + scPreshowerEnergy ) * BDTresponse',
                 'BDTerror/BDTresponse',
-                'trkMomentum',
                 'trkMomentumRelError',
-                'BDTerror/BDTresponse/trkMomentumRelError',
-                '( scRawEnergy + scPreshowerEnergy )*BDTresponse/trkMomentum',
-                ( '( scRawEnergy + scPreshowerEnergy )*BDTresponse/trkMomentum  *' +
-                  'sqrt( BDTerror/BDTresponse*BDTerror/BDTresponse + trkMomentumRelError*trkMomentumRelError)' ),
+                'trkMomentum/(( scRawEnergy + scPreshowerEnergy )*BDTresponse)',
                 'eleEcalDriven',
                 'eleTrackerDriven',
-                'eleClass',
-                'scIsEB',
+                'full5x5_r9',
+                'fbrem',
+                'gsfchi2',
+                'gsfndof', 
+                'trkEta',
+                'trkPhi'     # The best way to describe cracks is to use the track (unbiased) directorion
+#                'trkMomentum',                                # RCLSA Again, let us choose one absolute scale and the rest be relative
+#                'BDTerror/BDTresponse/trkMomentumRelError',   
+#                ( '( scRawEnergy + scPreshowerEnergy )*BDTresponse/trkMomentum  *' +
+#                  'sqrt( BDTerror/BDTresponse*BDTerror/BDTresponse + trkMomentumRelError*trkMomentumRelError)' ),
+#                'eleClass',
+#                'scIsEB',
                 ]
         
         else:
