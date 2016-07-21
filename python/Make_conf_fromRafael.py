@@ -29,7 +29,7 @@ def Make_conf(Verbose=True):
     # root_file = 'Ntup_Jun22_lowpt_training.root'
 
 
-    ntup_path = os.path.join( '/data/userdata/rclsa/ElectronTrees/' )
+    ntup_path = os.path.join( '/data/userdata/rclsa/ElectronTrees/Jul17/' )
  #   ntup_path = os.path.join( os.environ['CMSSW_BASE'], 'src/NTuples' )
 
 
@@ -72,9 +72,9 @@ def Make_conf(Verbose=True):
         # config.CutBase          = "eventNumber%2==0"
         # Remove 2/7th of the events (reduces training from 70% to 50%)
         if particle == 'photon':
-            config.CutBase          = "eventNumber%4 < 3"
+            config.CutBase          = "eventNumber%4==2"
         else:
-            config.CutBase          = "eventNumber%2==0"
+            config.CutBase          = "eventNumber%4==0"
 
         config.CutEB            = "scIsEB"
         config.CutEE            = "!scIsEB"
@@ -227,7 +227,7 @@ def Make_conf(Verbose=True):
             config.DoCombine        = "True"
 
             config.TargetComb       = "( genEnergy - ( scRawEnergy + scPreshowerEnergy )*BDTresponse ) / ( trkMomentum - ( scRawEnergy + scPreshowerEnergy )*BDTresponse )"
-            config.CutComb          = "(eventNumber%2==1)"
+            config.CutComb          = "(eventNumber%4==1)"
 
             config.VariablesComb = [
                 '( scRawEnergy + scPreshowerEnergy ) * BDTresponse',
@@ -235,7 +235,6 @@ def Make_conf(Verbose=True):
                 'trkMomentumRelError',
                 'trkMomentum/(( scRawEnergy + scPreshowerEnergy )*BDTresponse)',
                 'eleEcalDriven',
-                'eleTrackerDriven',
                 'full5x5_r9',
                 'fbrem',
                 'gsfchi2',
