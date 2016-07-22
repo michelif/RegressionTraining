@@ -11,8 +11,8 @@ export PARTICLE="$1"
 export REGION="$2"
 
 
-# export TESTRUN="Y"
-export TESTRUN="N"
+export TESTRUN="Y"
+# export TESTRUN="N"
 
 # =====================================
 # Set correct paths to Ntuples
@@ -84,12 +84,16 @@ NTUPLEPATH="${CMSSW_BASE}/src/NTuples/"
 # Full pt spectrum
 
 # If "Y", 1 set of plots is made for 0 - 6500 GeV
-# export HIGHPT="Y"
+export HIGHPT="Y"
 
 # If "Y", a set of plots is made for several pt ranges, up to 6500 GeV
 export USEGLOBALPTBINS="Y"
+# export USEGLOBALPTBINS="N"
 
-export FLATNTUPLE=$NTUPLEPATH/Ntup_Jun22_fullpt_testing_sample.root
+
+# export FLATNTUPLE=$NTUPLEPATH/Ntup_Jun22_fullpt_testing_sample.root
+# export FLATNTUPLE=$NTUPLEPATH/Ntup_Jul15_fullpt_devel.root # <-- From Rafael!
+export FLATNTUPLE=$NTUPLEPATH/Ntup_Jul15_fullpt_testing.root # <-- From Rafael!
 
 # PHOTONTRAINING="Config_photon_fullpt_Jun25_results.root"
 # ELECTRONTRAINING="Config_electron_fullpt_Jun25_results.root"
@@ -103,9 +107,11 @@ export FLATNTUPLE=$NTUPLEPATH/Ntup_Jun22_fullpt_testing_sample.root
 # ELECTRONTRAINING="Config_electron_Jun30_results.root"
 
 # Redone training sets by Rafael
-PHOTONTRAINING="Config_photon_Jul13_results.root"
-ELECTRONTRAINING="Config_electron_Jul13_results.root"
+# PHOTONTRAINING="Config_photon_Jul13_results.root"
+# ELECTRONTRAINING="Config_electron_Jul13_results.root"
 
+# EP combination result
+ELECTRONTRAINING="Config_electron_Jul16_results.root"
 
 
 # =====================================
