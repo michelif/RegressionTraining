@@ -86,7 +86,7 @@ def Make_conf(Verbose=True):
             config.HistoConfig      = "jobs/dummy_Histo.config"
             
             # Pretty big CutBase to increase speed - regenerate when everything works
-            config.CutBase          = "eventNumber%1==0"
+            config.CutBase          = "eventNumber%5==0"
 
             config.CutEB            = "scIsEB"
             config.CutEE            = "!scIsEB"

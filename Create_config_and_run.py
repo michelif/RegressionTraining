@@ -8,7 +8,8 @@ Thomas:
 ########################################
 
 # LATEST MODULE FOR CONFIGURATION FILES
-from python.Make_conf_fromRafael import Make_conf
+# from python.Make_conf_fromRafael import Make_conf
+from python.Make_conf_ECALTRK import Make_conf
 
 import os
 import argparse
