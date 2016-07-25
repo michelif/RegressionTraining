@@ -46,6 +46,8 @@ struct RegressionParameters
     bool        doErrors;
     bool        doCombine;
 
+    bool        doEB;
+
 };
 
 

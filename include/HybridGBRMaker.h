@@ -47,7 +47,8 @@ class HybridGBRMaker
                   const std::string& fileNames,
                   const std::string& treeName,
                   const std::string& outputDirectory,
-                  bool doCombine
+                  bool doCombine,
+                  bool doEB
                   );
         void addVariableEB(const std::string& name);
         void addVariableEE(const std::string& name);
@@ -74,6 +75,7 @@ class HybridGBRMaker
         std::string m_weight;
 
         bool m_doCombine;
+        bool m_doEB;
 
         GBRTrainer* m_trainerComb;
         GBRForestD* m_forestEBmean;

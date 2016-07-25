@@ -57,6 +57,7 @@ HybridGBRMaker::HybridGBRMaker():
     m_targetComb(""),
     m_weight(""),
     m_doCombine(true),
+    m_doEB(true),
     //m_trainerEBVar(NULL),
     //m_trainerEE(NULL),
     //m_trainerEEVar(NULL),
@@ -127,12 +128,15 @@ bool HybridGBRMaker::init(const string& name,
                            const string& fileNames,
                            const string& treeName,
                            const string& outputDirectory,
-                           bool doCombine)
+                           bool doCombine,
+                           bool doEB
+                           )
 /*****************************************************************/
 {
     cout << "INFO: init semi-parametric GBR regression " << name << "\n";
     m_name = name;
     m_doCombine = doCombine;
+    m_doEB      = doEB;
 
     // create GBR trainer
     m_trainerComb = new GBRTrainer();
@@ -237,8 +241,15 @@ void HybridGBRMaker::run(const string& cutBase, const string& cutComb, const str
 /*****************************************************************/
 {
     cout << "INFO: Prepare and run training for " << m_name << "\n";
-    runEB(cutBase, cutEB, options);
-    runEE(cutBase, cutEE, options);
+
+    if(m_doEB){
+        cout << "      Running only EB\n";
+        runEB(cutBase, cutEB, options);
+        }
+    if(!m_doEB){
+        cout << "      Running only EE\n";
+        runEE(cutBase, cutEE, options);
+        }
     if(m_doCombine) runComb(cutComb, options);
 }
 

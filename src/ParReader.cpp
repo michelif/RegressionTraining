@@ -89,6 +89,9 @@ bool ParReader::read(const string& parFileName)
        stringstream keyDoErrors;
        stringstream keyDoCombine;
 
+       stringstream keyDoEB;
+
+
        keyInputFiles           <<  baseName  <<  "."  <<  i  <<  ".InputFiles";
        keyTree                 <<  baseName  <<  "."  <<  i  <<  ".Tree";
        keyName                 <<  baseName  <<  "."  <<  i  <<  ".Name";
@@ -109,6 +112,7 @@ bool ParReader::read(const string& parFileName)
        keyDoErrors             <<  baseName  <<  "."  <<  i  <<  ".DoErrors";
        keyDoCombine            <<  baseName  <<  "."  <<  i  <<  ".DoCombine";
 
+       keyDoEB                 <<  baseName  <<  "."  <<  i  <<  ".DoEB";
 
 
        RegressionParameters par;
@@ -131,6 +135,8 @@ bool ParReader::read(const string& parFileName)
        par.cutEE               = string(params.GetValue(keyCutEE.str().c_str(),              ""));
        par.doErrors            =        params.GetValue(keyDoErrors.str().c_str(),           false);
        par.doCombine           =        params.GetValue(keyDoCombine.str().c_str(),          false);
+
+       par.doEB                =        params.GetValue(keyDoEB.str().c_str(),               true);
 
        m_regParams.push_back(par);
 

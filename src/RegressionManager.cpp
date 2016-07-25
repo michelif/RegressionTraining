@@ -168,7 +168,8 @@ bool RegressionManager::makeRegression()
                     it->inputFileNames,
                     it->treeName,
                     m_reader.outputDirectory(),
-                    it->doCombine
+                    it->doCombine,
+                    it->doEB
                     );
             if(!status)
                 break;
