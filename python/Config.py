@@ -38,6 +38,7 @@ class Config:
 
         self.DoErrors         = "True"
         self.DoCombine        = "True"
+        self.DoEB             = "True"
 
         self.VariablesEB      = [
             "nVtx",
@@ -175,6 +176,7 @@ class Config:
         
         self.w( self.parse_normal( "DoErrors" ) )
         self.w( self.parse_normal( "DoCombine" ) )
+        self.w( self.parse_normal( "DoEB" ) )
 
         self.w( self.parse_list( "VariablesEB" ) )
         self.w( self.parse_list( "VariablesEE" ) )
