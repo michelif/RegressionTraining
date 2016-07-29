@@ -33,6 +33,11 @@ int main() {
   //                      Variables                           //
   vector<TString> fileName;
 
+<<<<<<< HEAD
+  fileName.push_back("/data/userdata/rclsa/ElectronTrees/Jul22/Ntup_Jul22_fullpt_testing_sample.root");
+  fileName.push_back("/data/userdata/rclsa/ElectronTrees/Jul22/Ntup_Jul22_fullpt_testing.root");
+  fileName.push_back("/data/userdata/rclsa/ElectronTrees/Jul22/Ntup_Jul22_fullpt_training.root");
+=======
   // fileName.push_back("/data/userdata/rclsa/ElectronTrees/Jul22/Ntup_Jul22_fullpt_testing.root");
   // fileName.push_back("/data/userdata/rclsa/ElectronTrees/Jul22/Ntup_Jul22_fullpt_testing_sample.root");
   // fileName.push_back("/data/userdata/rclsa/ElectronTrees/Jul22/Ntup_Jul22_fullpt_training.root");
@@ -40,12 +45,14 @@ int main() {
   fileName.push_back("/afs/cern.ch/work/t/tklijnsm/public/CMSSW_8_0_4/src/NTuples/Ntup_Jul22_fullpt_testing.root");
   fileName.push_back("/afs/cern.ch/work/t/tklijnsm/public/CMSSW_8_0_4/src/NTuples/Ntup_Jul22_fullpt_testing_sample.root");
   fileName.push_back("/afs/cern.ch/work/t/tklijnsm/public/CMSSW_8_0_4/src/NTuples/Ntup_Jul22_fullpt_training.root");
+>>>>>>> 58cbddf4f1f39197bb37b807e98f4ad45b060d3a
 
   float trkMomentum, trkEta, scRawEnergy;
   int scIsEB;
 
   float ECALweight, TRKweight;  
-  TString treeName = "een_analyzer/ElectronTree";
+  TString dirName = "een_analyzer";
+  TString treeName = "ElectronTree";
 
   //                  END of Variables                        //
   //************************************************************
@@ -60,8 +67,8 @@ int main() {
     cout << "Opening " << fileName[i].Data() << endl;
 
     TFile* currentFile = new TFile(fileName[i],"update");
-    
-    TTree *tree = (TTree*)currentFile->Get(treeName);
+    TDirectoryFile* directory = (TDirectoryFile*) currentFile->Get(dirName);
+    TTree *tree = (TTree*) directory->Get(treeName);
 
     tree->SetBranchStatus("trkMomentum", 1);
     tree->SetBranchAddress("trkMomentum", &trkMomentum);
@@ -95,8 +102,11 @@ int main() {
       br1->Fill();
       br2->Fill();
       
+
     }
-    tree->Write("",TObject::kOverwrite); // save new version only
+
+    directory->cd();
+    tree->Write("", TObject::kOverwrite); // save new version only
     currentFile->Close();
     cout << "...closed file." << endl;
   }
