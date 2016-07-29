@@ -11,8 +11,8 @@
 #include <cmath>
 #include <iostream>
 
-#include "Math/VectorUtil.h"
-#include "Math/GenVector/LorentzVector.h"
+// #include "Math/VectorUtil.h"
+// #include "Math/GenVector/LorentzVector.h"
 #include "TMath.h"
 #include "TFile.h"
 #include "TString.h"
@@ -25,7 +25,7 @@
 using namespace std;
 using namespace ROOT;
 
-typedef ROOT::Math::LorentzVector< ROOT::Math::PxPyPzE4D<float> > LorentzVector;
+// typedef ROOT::Math::LorentzVector< ROOT::Math::PxPyPzE4D<float> > LorentzVector;
 
 int main() {
   
@@ -33,9 +33,13 @@ int main() {
   //                      Variables                           //
   vector<TString> fileName;
 
-  fileName.push_back("/data/userdata/rclsa/ElectronTrees/Jul22/Ntup_Jul22_fullpt_testing.root");
-  fileName.push_back("/data/userdata/rclsa/ElectronTrees/Jul22/Ntup_Jul22_fullpt_testing_sample.root");
-  fileName.push_back("/data/userdata/rclsa/ElectronTrees/Jul22/Ntup_Jul22_fullpt_training.root");
+  // fileName.push_back("/data/userdata/rclsa/ElectronTrees/Jul22/Ntup_Jul22_fullpt_testing.root");
+  // fileName.push_back("/data/userdata/rclsa/ElectronTrees/Jul22/Ntup_Jul22_fullpt_testing_sample.root");
+  // fileName.push_back("/data/userdata/rclsa/ElectronTrees/Jul22/Ntup_Jul22_fullpt_training.root");
+
+  fileName.push_back("/afs/cern.ch/work/t/tklijnsm/public/CMSSW_8_0_4/src/NTuples/Ntup_Jul22_fullpt_testing.root");
+  fileName.push_back("/afs/cern.ch/work/t/tklijnsm/public/CMSSW_8_0_4/src/NTuples/Ntup_Jul22_fullpt_testing_sample.root");
+  fileName.push_back("/afs/cern.ch/work/t/tklijnsm/public/CMSSW_8_0_4/src/NTuples/Ntup_Jul22_fullpt_training.root");
 
   float trkMomentum, trkEta, scRawEnergy;
   int scIsEB;
