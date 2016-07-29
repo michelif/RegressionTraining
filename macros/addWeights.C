@@ -37,7 +37,7 @@ int main() {
   fileName.push_back("/data/userdata/rclsa/ElectronTrees/Jul22/Ntup_Jul22_fullpt_testing.root");
   fileName.push_back("/data/userdata/rclsa/ElectronTrees/Jul22/Ntup_Jul22_fullpt_training.root");
 
-  float trkMomentum, trkEta, scRawEnergy;
+  float trkMomentum, trkEta, scRawEnergy, scPreshowerEnergy;
   int scIsEB;
 
   float ECALweight, TRKweight;  
@@ -66,6 +66,8 @@ int main() {
     tree->SetBranchAddress("trkEta", &trkEta);
     tree->SetBranchStatus("scRawEnergy", 1);
     tree->SetBranchAddress("scRawEnergy", &scRawEnergy);
+    tree->SetBranchStatus("scPreshowerEnergy", 1);
+    tree->SetBranchAddress("scPreshowerEnergy", &scPreshowerEnergy);
     tree->SetBranchStatus("scIsEB", 1);
     tree->SetBranchAddress("scIsEB", &scIsEB);
 
@@ -76,15 +78,16 @@ int main() {
     Int_t numEntries = (Int_t)tree->GetEntries();
     for (Int_t j=0; j<numEntries; j++) {
 
+      float ECALenergy = scPreshowerEnergy + scRawEnergy;
       tree->GetEntry(j);
 
       if (scIsEB) {
-	ECALweight = 1./( 0.05*scRawEnergy+0.35 );
+	ECALweight = 1./( 0.05*ECALenergy+0.35 );
 	TRKweight = 1./( 0.002*trkMomentum*trkMomentum*TMath::Sqrt(trkMomentum/TMath::CosH(trkEta)) +
 			 0.00007*trkMomentum*trkMomentum*trkMomentum/TMath::CosH(trkEta) +
 			 0.001*trkMomentum*trkMomentum*TMath::Log(0.002*trkMomentum/TMath::CosH(trkEta)) );
       } else {
-	ECALweight = 1./( 0.03*scRawEnergy*scRawEnergy/(1+0.07*scRawEnergy) + 0.05*scRawEnergy*scRawEnergy*TMath::Exp(-0.04*scRawEnergy) );
+	ECALweight = 1./( 0.03*ECALenergy*ECALenergy/(1+0.07*ECALenergy) + 0.05*ECALenergy*ECALenergy*TMath::Exp(-0.04*ECALenergy) );
 	TRKweight = 1./( 0.02*trkMomentum*trkMomentum*TMath::Sqrt(trkMomentum/TMath::CosH(trkEta)) +
 			 0.00006*trkMomentum*trkMomentum*trkMomentum*TMath::Log(0.0000003*trkMomentum/TMath::CosH(trkEta))/TMath::CosH(trkEta) );
       }
