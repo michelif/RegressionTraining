@@ -79,16 +79,17 @@ def Make_conf(Verbose=True):
                     ]
 
                 # Set the target - be careful to include the tracker energy in the target for the Ep combination
-                if ECAL_AND_TRK:
-                    config.Target           = "(genEnergy-( scRawEnergy + scPreshowerEnergy )) / (trkMomentum-( scRawEnergy + scPreshowerEnergy ))"
-                else:
-                    config.Target           = "genEnergy / ( scRawEnergy + scPreshowerEnergy )"
+                # if ECAL_AND_TRK:
+                #     config.Target           = "(genEnergy-( scRawEnergy + scPreshowerEnergy )) / (trkMomentum-( scRawEnergy + scPreshowerEnergy ))"
+                # else:
+                #     config.Target           = "genEnergy / ( scRawEnergy + scPreshowerEnergy )"
+                config.Target           = "genEnergy / ( scRawEnergy + scPreshowerEnergy )"
 
                 # config.TargetError      = "1.253*abs( BDTresponse - genEnergy / ( scRawEnergy + scPreshowerEnergy ) )"
                 config.HistoConfig      = "jobs/dummy_Histo.config"
                 
                 # Pretty big CutBase to increase speed - regenerate when everything works
-                config.CutBase          = "eventNumber%3==0"
+                config.CutBase          = "eventNumber%5==0"
 
                 config.CutEB            = "scIsEB"
                 config.CutEE            = "!scIsEB"
@@ -269,39 +270,39 @@ def Make_conf(Verbose=True):
                 # Ep combination
                 ########################################
 
-                # # Only do the combination for the electron
-                # if particle == 'electron':
+                # Only do the combination for the electron AND there are no tracking variables
+                if particle == 'electron' and not ECAL_AND_TRK:
 
-                #     config.DoCombine        = "True"
+                    config.DoCombine        = "True"
 
-                #     config.TargetComb       = "( genEnergy - ( scRawEnergy + scPreshowerEnergy )*BDTresponse ) / ( trkMomentum - ( scRawEnergy + scPreshowerEnergy )*BDTresponse )"
-                #     config.CutComb          = "(eventNumber%4==1)"
+                    config.TargetComb       = "( genEnergy - ( scRawEnergy + scPreshowerEnergy )*BDTresponse ) / ( trkMomentum - ( scRawEnergy + scPreshowerEnergy )*BDTresponse )"
+                    config.CutComb          = config.CutBase.replace( '0', '1' )
 
-                #     config.VariablesComb = [
-                #         '( scRawEnergy + scPreshowerEnergy ) * BDTresponse',
-                #         'BDTerror/BDTresponse',
-                #         'trkMomentumRelError',
-                #         'trkMomentum/(( scRawEnergy + scPreshowerEnergy )*BDTresponse)',
-                #         'eleEcalDriven',
-                #         'full5x5_r9',
-                #         'fbrem',
-                #         'gsfchi2',
-                #         'gsfndof', 
-                #         'trkEta',
-                #         'trkPhi'     # The best way to describe cracks is to use the track (unbiased) directorion
-                #        # 'trkMomentum',                                # RCLSA Again, let us choose one absolute scale and the rest be relative
-                #        # 'BDTerror/BDTresponse/trkMomentumRelError',   
-                #        # ( '( scRawEnergy + scPreshowerEnergy )*BDTresponse/trkMomentum  *' +
-                #        #   'sqrt( BDTerror/BDTresponse*BDTerror/BDTresponse + trkMomentumRelError*trkMomentumRelError)' ),
-                #        # 'eleClass',
-                #        # 'scIsEB',
-                #         ]
+                    config.VariablesComb = [
+                        '( scRawEnergy + scPreshowerEnergy ) * BDTresponse',
+                        'BDTerror/BDTresponse',
+                        'trkMomentumRelError',
+                        'trkMomentum/(( scRawEnergy + scPreshowerEnergy )*BDTresponse)',
+                        'eleEcalDriven',
+                        'full5x5_r9',
+                        'fbrem',
+                        'gsfchi2',
+                        'gsfndof', 
+                        'trkEta',
+                        'trkPhi'     # The best way to describe cracks is to use the track (unbiased) directorion
+                       # 'trkMomentum',                                # RCLSA Again, let us choose one absolute scale and the rest be relative
+                       # 'BDTerror/BDTresponse/trkMomentumRelError',   
+                       # ( '( scRawEnergy + scPreshowerEnergy )*BDTresponse/trkMomentum  *' +
+                       #   'sqrt( BDTerror/BDTresponse*BDTerror/BDTresponse + trkMomentumRelError*trkMomentumRelError)' ),
+                       # 'eleClass',
+                       # 'scIsEB',
+                        ]
                 
-                # else:
-                #     config.DoCombine        = "False"
+                else:
+                    config.DoCombine        = "False"
 
-                # Not necessary if the TRK vars in the main BDT
-                config.DoCombine        = "False"
+                # # Not necessary if the TRK vars in the main BDT
+                # config.DoCombine        = "False"
 
 
                 ########################################
