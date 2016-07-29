@@ -79,11 +79,11 @@ def Make_conf(Verbose=True):
                     ]
 
                 # Set the target - be careful to include the tracker energy in the target for the Ep combination
-                # if ECAL_AND_TRK:
-                #     config.Target           = "(genEnergy-( scRawEnergy + scPreshowerEnergy )) / (trkMomentum-( scRawEnergy + scPreshowerEnergy ))"
-                # else:
-                #     config.Target           = "genEnergy / ( scRawEnergy + scPreshowerEnergy )"
-                config.Target           = "genEnergy / ( scRawEnergy + scPreshowerEnergy )"
+                if ECAL_AND_TRK:
+                    config.Target           = "genEnergy * (ECALweight + TRKweight) / ( scRawEnergy*ECALweight + scPreshowerEnergy*ECALweight + trkMomentum*TRKweight )"
+                else:
+                    config.Target           = "genEnergy / ( scRawEnergy + scPreshowerEnergy )"
+                # config.Target           = "genEnergy / ( scRawEnergy + scPreshowerEnergy )"
 
                 # config.TargetError      = "1.253*abs( BDTresponse - genEnergy / ( scRawEnergy + scPreshowerEnergy ) )"
                 config.HistoConfig      = "jobs/dummy_Histo.config"
