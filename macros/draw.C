@@ -1,3 +1,5 @@
+#include "TMath.h"
+
 void draw() {
   TFile* input = TFile::Open("resolution.root");
   TGraphErrors* ECALgraph_eb = (TGraphErrors*) input->Get("ECALgraph_eb");
@@ -8,8 +10,8 @@ void draw() {
   //  TF1* ECALfnc_eb = new TF1("ECALfnc_eb", "[0]+[1]/x+[2]/(x*x)+[3]/(x*x*x)", 5, 350);
   TF1* ECALfnc_eb = new TF1("ECALfnc_eb", "[1]/(x)+[2]/(x*x)", 5, 350);
   TF1* ECALfnc_ee = new TF1("ECALfnc_ee", "[0]/(1+[1]*x)+[2]*exp(-[3]*x)", 10, 350);
-  TF1* TRKfnc_eb = new TF1("TRKfnc_eb", "[0]*sqrt(x)+[1]*x+[2]*log([3]*x)", 5, 350);
-  TF1* TRKfnc_ee = new TF1("TRKfnc_ee", "[0]*sqrt(x)+[1]*x*log([2]*x)", 5, 350);
+  TF1* TRKfnc_eb = new TF1("TRKfnc_eb", "[0]*sqrt(x)+[1]*x+[2]*x*x", 5, 350);
+  TF1* TRKfnc_ee = new TF1("TRKfnc_ee", "[0]*sqrt(x)+[1]*x+[2]*x*x", 5, 350);
 
   ECALfnc_eb->SetParameters(0., 0.1, 0.1);
   ECALfnc_eb->SetParLimits(0, 0., 1.);
@@ -20,14 +22,7 @@ void draw() {
   ECALfnc_ee->SetParLimits(2, -10., 10.);
   ECALfnc_ee->SetParLimits(3, 0., 1.);
   TRKfnc_eb->SetParameters(0.005, 0.005, 0.03, 0.3);
-  TRKfnc_eb->SetParLimits(0, 0., 1.);
-  TRKfnc_eb->SetParLimits(1, 0., 1.);
-  TRKfnc_eb->SetParLimits(2, 0., 1000.);
-  TRKfnc_eb->SetParLimits(3, 0., 1000.);
-  TRKfnc_ee->SetParameters(0.005, 0.0005);
-  TRKfnc_ee->SetParLimits(0, 0., 1.);
-  TRKfnc_ee->SetParLimits(1, -10., 10.);
-  TRKfnc_ee->SetParLimits(2, 0., 1.);
+  TRKfnc_ee->SetParameters(0.005, 0.005, 0.03, 0.3);
 
   ECALgraph_eb->Fit(ECALfnc_eb, "RV");
   ECALgraph_ee->Fit(ECALfnc_ee, "RV");

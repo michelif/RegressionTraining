@@ -81,16 +81,28 @@ int main() {
       float ECALenergy = scPreshowerEnergy + scRawEnergy;
       tree->GetEntry(j);
 
-      if (scIsEB) {
-	ECALweight = 1./( 0.05*ECALenergy+0.35 );
-	TRKweight = 1./( 0.002*trkMomentum*trkMomentum*TMath::Sqrt(trkMomentum/TMath::CosH(trkEta)) +
-			 0.00007*trkMomentum*trkMomentum*trkMomentum/TMath::CosH(trkEta) +
-			 0.001*trkMomentum*trkMomentum*TMath::Log(0.002*trkMomentum/TMath::CosH(trkEta)) );
+      if (trkMomentum < 350. && trkMomentum > 4.) {
+	if (scIsEB) {
+	  ECALweight = 1./( 0.05*ECALenergy+0.35 );
+	  TRKweight = 1./( 0.0012*trkMomentum*trkMomentum*TMath::Sqrt(trkMomentum/TMath::CosH(trkEta)) +
+			   0.00018*trkMomentum*trkMomentum*trkMomentum/TMath::CosH(trkEta) -
+			   0.00000018*trkMomentum*trkMomentum*trkMomentum*trkMomentum/(TMath::CosH(trkEta)*TMath::CosH(trkEta)) );	
+	} else {
+	  ECALweight = 1./( 0.03*ECALenergy*ECALenergy/(1+0.07*ECALenergy) + 0.05*ECALenergy*ECALenergy*TMath::Exp(-0.04*ECALenergy) );
+	  TRKweight = 1./( 0.02*trkMomentum*trkMomentum*TMath::Sqrt(trkMomentum/TMath::CosH(trkEta)) -
+			   0.0004*trkMomentum*trkMomentum*trkMomentum/TMath::CosH(trkEta) -
+			   0.00000016*trkMomentum*trkMomentum*trkMomentum*trkMomentum/(TMath::CosH(trkEta)*TMath::CosH(trkEta)) );
+	}
+      } else if (trkMomentum > 350.) {
+	ECALweight = 1.;
+	TRKweight = 0.;
       } else {
-	ECALweight = 1./( 0.03*ECALenergy*ECALenergy/(1+0.07*ECALenergy) + 0.05*ECALenergy*ECALenergy*TMath::Exp(-0.04*ECALenergy) );
-	TRKweight = 1./( 0.02*trkMomentum*trkMomentum*TMath::Sqrt(trkMomentum/TMath::CosH(trkEta)) +
-			 0.00006*trkMomentum*trkMomentum*trkMomentum*TMath::Log(0.0000003*trkMomentum/TMath::CosH(trkEta))/TMath::CosH(trkEta) );
+	ECALweight = 0.;
+	TRKweight = 1.;
       }
+
+      if (TRKweight < 0.)  cout << "TRKweight less than 0 " << trkMomentum << " " << trkEta << endl;
+      if (ECALweight < 0.) cout << "ECALweight less than 0 " << ECALenergy << endl;
       
       br1->Fill();
       br2->Fill();
