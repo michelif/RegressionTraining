@@ -100,7 +100,7 @@ def Make_conf(Verbose=True):
                     config.DoEB         = "False"
 
 
-                # config.CutError         = "(eventNumber%2!=0) && (((eventNumber-1)/2)%4==3)"
+                config.CutError         = "(eventNumber%5==1) && (eventNumber%10==1)"
 
                 # Add an additional cut so that the regression is fast
                 # NtupIDcut = 2000
@@ -276,7 +276,7 @@ def Make_conf(Verbose=True):
                     config.DoCombine        = "True"
 
                     config.TargetComb       = "( genEnergy - ( scRawEnergy + scPreshowerEnergy )*BDTresponse ) / ( trkMomentum - ( scRawEnergy + scPreshowerEnergy )*BDTresponse )"
-                    config.CutComb          = config.CutBase.replace( '0', '1' )
+                    config.CutComb          = config.CutBase.replace( '0', '1' ) +  '&& (eventNumber%10!=1)'
 
                     config.VariablesComb = [
                         '( scRawEnergy + scPreshowerEnergy ) * BDTresponse',
