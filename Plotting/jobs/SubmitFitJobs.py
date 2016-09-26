@@ -33,12 +33,18 @@ cd RegressionTraining/Plotting
 def main():
 
     cmds = [
-        'python Fit.py Config_Jul31_electron_EB_ECALonly_results.root --region EB',
-        'python Fit.py Config_Jul31_electron_EB_ECALTRK_results.root --region EB',
-        'python Fit.py Config_Jul31_electron_EE_ECALonly_results.root --region EE',
-        'python Fit.py Config_Jul31_electron_EE_ECALTRK_results.root --region EE',
-        'python Fit.py Config_Jul31_photon_EB_ECALonly_results.root --region EB',
-        'python Fit.py Config_Jul31_photon_EE_ECALonly_results.root --region EE',
+        # 'python Fit.py Config_Jul31_electron_EB_ECALonly_results.root --region EB',
+        # 'python Fit.py Config_Jul31_electron_EB_ECALTRK_results.root --region EB',
+        # 'python Fit.py Config_Jul31_electron_EE_ECALonly_results.root --region EE',
+        # 'python Fit.py Config_Jul31_electron_EE_ECALTRK_results.root --region EE',
+        # 'python Fit.py Config_Jul31_photon_EB_ECALonly_results.root --region EB',
+        # 'python Fit.py Config_Jul31_photon_EE_ECALonly_results.root --region EE',
+        'python Fit.py Config_Aug09_electron_EB_ECALonly_results.root --region EB',
+        'python Fit.py Config_Aug09_electron_EB_ECALTRK_results.root --region EB',
+        'python Fit.py Config_Aug09_electron_EE_ECALonly_results.root --region EE',
+        'python Fit.py Config_Aug09_electron_EE_ECALTRK_results.root --region EE',
+        'python Fit.py Config_Aug09_photon_EB_ECALonly_results.root --region EB',
+        'python Fit.py Config_Aug09_photon_EE_ECALonly_results.root --region EE',
         ]
 
     for i_cmd, cmd in enumerate(cmds):
