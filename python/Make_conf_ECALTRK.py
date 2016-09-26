@@ -72,7 +72,7 @@ def Make_conf(Verbose=True):
                 config.Options = [
                     "MinEvents=200",
                     "Shrinkage=0.1",
-                    "NTrees=1000",
+                    "NTrees=2000", # <-- Moved up from 1000 to include extra tracker effects
                     "MinSignificance=5.0",
                     # "EventWeight=max( min(1,exp(-(genPt-50)/50)), 0.1 )", # <-- What to do?
                     "EventWeight=1", # <-- No one really likes the weights
@@ -88,8 +88,9 @@ def Make_conf(Verbose=True):
                 # config.TargetError      = "1.253*abs( BDTresponse - genEnergy / ( scRawEnergy + scPreshowerEnergy ) )"
                 config.HistoConfig      = "jobs/dummy_Histo.config"
                 
-                # Pretty big CutBase to increase speed - regenerate when everything works
-                config.CutBase          = "eventNumber%5==0"
+                # 80% for the main BDT - divide the sample in divideNumber pieces, and use all but one piece for the main BDT
+                divideNumber            = 5
+                config.CutBase          = "eventNumber%{0}!=0".format( divideNumber )
 
                 config.CutEB            = "scIsEB"
                 config.CutEE            = "!scIsEB"
@@ -99,14 +100,9 @@ def Make_conf(Verbose=True):
                 else:
                     config.DoEB         = "False"
 
-
-                # config.CutError         = "(eventNumber%2!=0) && (((eventNumber-1)/2)%4==3)"
-
-                # Add an additional cut so that the regression is fast
-                # NtupIDcut = 2000
-                # config.CutBase  += ' && (NtupID<={0})'.format( NtupIDcut )
-                # config.CutError += ' && (NtupID<={0})'.format( NtupIDcut )
-                # config.CutComb  += ' && (NtupID<={0})'.format( NtupIDcut )
+                # 10% for combination, 10% for error
+                config.CutComb          = "eventNumber%{0}==0 && eventNumber%{1}==0".format( divideNumber, 2*divideNumber )
+                config.CutError         = "eventNumber%{0}==0 && eventNumber%{1}!=0".format( divideNumber, 2*divideNumber )
 
 
                 ########################################
@@ -276,7 +272,6 @@ def Make_conf(Verbose=True):
                     config.DoCombine        = "True"
 
                     config.TargetComb       = "( genEnergy - ( scRawEnergy + scPreshowerEnergy )*BDTresponse ) / ( trkMomentum - ( scRawEnergy + scPreshowerEnergy )*BDTresponse )"
-                    config.CutComb          = config.CutBase.replace( '0', '1' )
 
                     config.VariablesComb = [
                         '( scRawEnergy + scPreshowerEnergy ) * BDTresponse',
