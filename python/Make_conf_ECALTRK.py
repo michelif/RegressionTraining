@@ -34,7 +34,8 @@ def Make_conf(Verbose=True):
     root_file = 'Ntup_Jul22_fullpt_training.root'
 
     # ntup_path = os.path.join( '/data/userdata/rclsa/ElectronTrees/Jul17/' )
-    ntup_path = os.path.join( os.environ['CMSSW_BASE'], 'src/NTuples' )
+    # ntup_path = os.path.join( os.environ['CMSSW_BASE'], 'src/NTuples' )
+    ntup_path = os.path.join( '/mnt/t3nfs01/data01/shome/tklijnsm/Samples/RegressionSamples', '22Jul_samples' )
 
     datestr = strftime( '%b%d' )
 
@@ -72,7 +73,8 @@ def Make_conf(Verbose=True):
                 config.Options = [
                     "MinEvents=200",
                     "Shrinkage=0.1",
-                    "NTrees=2000", # <-- Moved up from 1000 to include extra tracker effects
+                    # "NTrees=2000", # <-- Moved up from 1000 to include extra tracker effects
+                    "NTrees=1000",
                     "MinSignificance=5.0",
                     # "EventWeight=max( min(1,exp(-(genPt-50)/50)), 0.1 )", # <-- What to do?
                     "EventWeight=1", # <-- No one really likes the weights
@@ -85,13 +87,9 @@ def Make_conf(Verbose=True):
                     config.Target           = "genEnergy / ( scRawEnergy + scPreshowerEnergy )"
                 # config.Target           = "genEnergy / ( scRawEnergy + scPreshowerEnergy )"
 
-                # config.TargetError      = "1.253*abs( BDTresponse - genEnergy / ( scRawEnergy + scPreshowerEnergy ) )"
+                config.TargetError      = "1.253*abs( BDTresponse - genEnergy / ( scRawEnergy + scPreshowerEnergy ) )"
                 config.HistoConfig      = "jobs/dummy_Histo.config"
                 
-                # 80% for the main BDT - divide the sample in divideNumber pieces, and use all but one piece for the main BDT
-                divideNumber            = 5
-                config.CutBase          = "eventNumber%{0}!=0".format( divideNumber )
-
                 config.CutEB            = "scIsEB"
                 config.CutEE            = "!scIsEB"
 
@@ -100,9 +98,22 @@ def Make_conf(Verbose=True):
                 else:
                     config.DoEB         = "False"
 
+
+                # ======================================
+                # Sample division - need a part for the ECAL-only training, and a part for the combination
+
+                # 80% for the main BDT - divide the sample in divideNumber pieces, and use all but one piece for the main BDT
+                divideNumber            = 3
+                config.CutBase          = "eventNumber%{0}!=0".format( divideNumber )
+
                 # 10% for combination, 10% for error
                 config.CutComb          = "eventNumber%{0}==0 && eventNumber%{1}==0".format( divideNumber, 2*divideNumber )
                 config.CutError         = "eventNumber%{0}==0 && eventNumber%{1}!=0".format( divideNumber, 2*divideNumber )
+
+                # # TEMPORARY: cut events drastically for test mode
+                config.CutBase  += " && NtupID<10000"
+                config.CutComb  += " && NtupID<10000"
+                config.CutError += " && NtupID<10000"
 
 
                 ########################################
@@ -272,6 +283,7 @@ def Make_conf(Verbose=True):
                     config.DoCombine        = "True"
 
                     config.TargetComb       = "( genEnergy - ( scRawEnergy + scPreshowerEnergy )*BDTresponse ) / ( trkMomentum - ( scRawEnergy + scPreshowerEnergy )*BDTresponse )"
+                    config.TargetError      = "1.253*abs(BDTresponse - genEnergy/(scRawEnergy+scPreshowerEnergy))"
 
                     config.VariablesComb = [
                         '( scRawEnergy + scPreshowerEnergy ) * BDTresponse',

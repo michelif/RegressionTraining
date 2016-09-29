@@ -801,7 +801,9 @@ void HybridGBRMaker::runComb(const string& cutComb, const string& options)
                 m_variablesEB, m_variablesEE,
                 m_cutEB, m_cutEE,
                 "BDTresponse",
-                0.2, 2.);
+                0.2, 2.,
+                m_doEB
+                );
 
     // add BDT error response to the tree
     cout << "INFO: filling BDT error in tree\n";
@@ -810,7 +812,9 @@ void HybridGBRMaker::runComb(const string& cutComb, const string& options)
                 m_variablesEB, m_variablesEE,
                 m_cutEB, m_cutEE,
                 "BDTerror",
-                0.0002, 0.5);
+                0.0002, 0.5,
+                m_doEB
+                );
 
 
     // run training for combination

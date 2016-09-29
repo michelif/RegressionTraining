@@ -41,99 +41,27 @@ class Config:
         self.DoEB             = "True"
 
         self.VariablesEB      = [
-            "nVtx",
-            "scRawEnergy",
-            "scEta",
-            "scPhi",
-            "scEtaWidth",
-            "scPhiWidth",
-            "scSeedR9",
-            "scSeedRawEnergy/scRawEnergy",
-            "scSeedEmax/scRawEnergy",
-            "scSeedE2nd/scRawEnergy",
-            "scSeedLeftRightAsym",
-            "scSeedTopBottomAsym",
-            "scSeedSigmaIetaIeta",
-            "scSeedSigmaIetaIphi",
-            "scSeedSigmaIphiIphi",
-            "N_ECALClusters",
-            "clusterMaxDR",
-            "clusterMaxDRDPhi",
-            "clusterMaxDRDEta",
-            "clusterMaxDRRawEnergy/scRawEnergy",
-            "clusterRawEnergy[0]/scRawEnergy",
-            "clusterRawEnergy[1]/scRawEnergy",
-            "clusterRawEnergy[2]/scRawEnergy",
-            "clusterDPhiToSeed[0]",
-            "clusterDPhiToSeed[1]",
-            "clusterDPhiToSeed[2]",
-            "clusterDEtaToSeed[0]",
-            "clusterDEtaToSeed[1]",
-            "clusterDEtaToSeed[2]",
-            "scSeedCryEta",
-            "scSeedCryPhi",
-            "scSeedCryIetaV2",
-            "scSeedCryIphiV2",
             ]
 
         self.VariablesEE      = [
-            "nVtx",
-            "scRawEnergy",
-            "scEta",
-            "scPhi",
-            "scEtaWidth",
-            "scPhiWidth",
-            "scSeedR9",
-            "scSeedRawEnergy/scRawEnergy",
-            "scSeedEmax/scRawEnergy",
-            "scSeedE2nd/scRawEnergy",
-            "scSeedLeftRightAsym",
-            "scSeedTopBottomAsym",
-            "scSeedSigmaIetaIeta",
-            "scSeedSigmaIetaIphi",
-            "scSeedSigmaIphiIphi",
-            "N_ECALClusters",
-            "clusterMaxDR",
-            "clusterMaxDRDPhi",
-            "clusterMaxDRDEta",
-            "clusterMaxDRRawEnergy/scRawEnergy",
-            "clusterRawEnergy[0]/scRawEnergy",
-            "clusterRawEnergy[1]/scRawEnergy",
-            "clusterRawEnergy[2]/scRawEnergy",
-            "clusterDPhiToSeed[0]",
-            "clusterDPhiToSeed[1]",
-            "clusterDPhiToSeed[2]",
-            "clusterDEtaToSeed[0]",
-            "clusterDEtaToSeed[1]",
-            "clusterDEtaToSeed[2]",
-            "scPreshowerEnergy/scRawEnergy",
-            "scSeedCryIxV2",
-            "scSeedCryIyV2",
             ]
 
         self.VariablesComb    = [
-            "(scRawEnergy+scPreshowerEnergy)*BDTresponse",
-            "BDTerror/BDTresponse",
-            "trkMomentum",
-            "trkMomentumRelError",
-            "BDTerror/BDTresponse/trkMomentumRelError",
-            "(scRawEnergy+scPreshowerEnergy)*BDTresponse/trkMomentum",
-            "(scRawEnergy+scPreshowerEnergy)*BDTresponse/trkMomentum*sqrt(BDTerror/BDTresponse*BDTerror/BDTresponse+trkMomentumRelError*trkMomentumRelError)",
-            "eleEcalDriven",
-            "eleTrackerDriven",
-            "eleClass",
-            "scIsEB",
             ]
 
-        self.Target           = "genEnergy/(scRawEnergy+scPreshowerEnergy)"
-        self.TargetError      = "1.253*abs(BDTresponse - genEnergy/(scRawEnergy+scPreshowerEnergy))"
-        self.TargetComb       = "(genEnergy-(scRawEnergy+scPreshowerEnergy)*BDTresponse)/(trkMomentum-(scRawEnergy+scPreshowerEnergy)*BDTresponse)"
+
+        # self.Target           = "genEnergy/(scRawEnergy+scPreshowerEnergy)"
+        # self.TargetError      = "1.253*abs(BDTresponse - genEnergy/(scRawEnergy+scPreshowerEnergy))"
+
         self.HistoConfig      = "jobs/dummy_Histo.config"
+
         self.CutBase          = "(eventNumber%2==0)&&(isMatched==1)"
         self.CutEB            = "scIsEB"
         self.CutEE            = "!scIsEB"
-        self.CutError         = "((eventNumber%2!=0)&&(((eventNumber-1)/2)%4==3)&&(isMatched==1))"
-        self.CutComb          = "((eventNumber%2!=0)&&(((eventNumber-1)/2)%4!=3)&&(isMatched==1))"
+
+        # self.TargetComb       = "(genEnergy-(scRawEnergy+scPreshowerEnergy)*BDTresponse)/(trkMomentum-(scRawEnergy+scPreshowerEnergy)*BDTresponse)"
+        # self.CutError         = "((eventNumber%2!=0)&&(((eventNumber-1)/2)%4==3)&&(isMatched==1))"
+        # self.CutComb          = "((eventNumber%2!=0)&&(((eventNumber-1)/2)%4!=3)&&(isMatched==1))"
 
 
     # ======================================
