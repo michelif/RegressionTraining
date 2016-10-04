@@ -11,10 +11,14 @@ import os
 import argparse
 import pickle
 
+# Change directory to location of this source file
+execDir = os.path.dirname( os.path.abspath(__file__) )
+os.chdir( execDir )
+
 import sys
 sys.path.append('src')
-from SlicePlot import SlicePlot
 
+from SlicePlot import SlicePlot
 
 import ROOT
 ROOT.gROOT.SetBatch(True)
@@ -48,14 +52,21 @@ result_path = os.getcwd()
 # result_path = '/mnt/t3nfs01/data01/shome/tklijnsm/EGM/CMSSW_8_0_4/src/RegressionTraining/Plotting'
 physpath_ws = lambda filename: os.path.join( result_path, filename )
 
-# Paths to Ntuples
-if os.environ['USER'] == 'tklijnsm':
-    ntup_path = '/mnt/t3nfs01/data01/shome/tklijnsm/EGM/CMSSW_8_0_4/src/NTuples'
+
+# # Paths to Ntuples
+# if os.environ['USER'] == 'tklijnsm':
+#     ntup_path = '/mnt/t3nfs01/data01/shome/tklijnsm/EGM/CMSSW_8_0_4/src/NTuples'
+# else:
+#     # Different users can implement different paths here
+#     ntup_path = '/mnt/t3nfs01/data01/shome/tklijnsm/EGM/CMSSW_8_0_4/src/NTuples'
+
+if os.environ['HOSTNAME'] == 't3ui17':
+    ntup_path = os.path.join( '/mnt/t3nfs01/data01/shome/tklijnsm/Samples/RegressionSamples', '22Jul_samples' )
 else:
-    # Different users can implement different paths here
-    ntup_path = '/mnt/t3nfs01/data01/shome/tklijnsm/EGM/CMSSW_8_0_4/src/NTuples'
+    ntup_path = '/afs/cern.ch/work/t/tklijnsm/public/CMSSW_8_0_4/src/NTuples'
 
 physpath_ntup = lambda filename: os.path.join( ntup_path, filename )
+
 
 
 ########################################
@@ -326,6 +337,10 @@ def Fit():
         hdata_globalPtBin = hdata.reduce( 'genPt>{0}&&genPt<{1}'.format( min_globalPt, max_globalPt ) )
         print '    Number of entries in this genPt selection: ' + str(hdata_globalPtBin.numEntries())
 
+
+        # ======================================
+        # genPt plot
+
         # Get the finer genPt bounds inside this global bin
         localPt_bounds = allPt_bounds[ allPt_bounds.index(min_globalPt) : allPt_bounds.index(max_globalPt) + 1 ]
 
@@ -346,6 +361,32 @@ def Fit():
             localPt_bounds,
             )
         genPt_sliceplot.FitSlices()
+
+
+        # ======================================
+        # genPt plot
+
+        genEta_bounds = [ 0., 0.5, 1.0, 1.5, 2.0, 4.0 ]
+
+        genEta_name = 'GENETA{0}-{1}'.format( int(min_globalPt), int(max_globalPt) )
+        genEta_sliceplot = SlicePlot(
+            name     = genEta_name,
+            longname = particle + region + ecaltrkstr + '_' + genEta_name,
+            plotdir  = plotdir
+            )
+        genEta_sliceplot.SetDataset( hdata_globalPtBin )
+        genEta_sliceplot.SetHistVars([
+            rawvar,
+            ecor74var,
+            ecorvar,
+            ])
+        genEta_sliceplot.SetSliceVar(
+            genEta,
+            genEta_bounds,
+            )
+        genEta_sliceplot.FitSlices()
+
+
 
 
 

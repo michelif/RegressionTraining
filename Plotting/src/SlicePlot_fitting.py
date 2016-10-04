@@ -5,7 +5,7 @@ from array import array
 
 import ROOT
 ROOT.gROOT.SetBatch(True)
-ROOT.gROOT.LoadMacro("/mnt/t3nfs01/data01/shome/tklijnsm/EGM/CMSSW_8_0_4/src/Plotting/src/effSigma.C")
+ROOT.gROOT.LoadMacro( os.path.abspath('src/effSigma.C') )
 
 # Returns a unique histogram name (useful if object is not accessed by name anyway)
 ROOTCNT = 0
