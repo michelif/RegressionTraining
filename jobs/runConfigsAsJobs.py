@@ -13,6 +13,7 @@ import os
 import shutil
 import argparse
 
+from glob import glob
 from time import sleep
 
 
@@ -22,24 +23,57 @@ from time import sleep
 
 parser = argparse.ArgumentParser()
 parser.add_argument( '--test', action='store_true', help='Does not submit the job, but creates the .sh file and prints')
-parser.add_argument( '-q', '--queue', type=str, choices=['short', 'all', 'long'], default='long', help='which queue to submit to')
+parser.add_argument( '-q', '--queue',
+    type=str, choices=['short', 'all', 'long', '8nm', '1nh', '8nh', '1nd', '2nd', '1nw', '2nw' ],
+    default='long', help='which queue to submit to')
 parser.add_argument( '-n', '--normalmemory', action='store_true', help='By default more memory is requested; this option disables that')
+parser.add_argument( '-k', '--keep', action='store_true', help='Does not clean the output and jobscript directories')
 args = parser.parse_args()
 
 
+# Figure out the platform
+host = os.environ['HOSTNAME']
+if host == 't3ui17':
+    onPsi = True
+    onLxplus = False
+elif 'lxplus' in host:
+    onPsi = False
+    onLxplus = True
+
+
+
 def main():
+
+    if onLxplus and args.queue in ['short', 'all', 'long' ]:
+        print 'Queue {0} does not exist on {1}; Please pick from {2}'.format(
+            args.queue, host, ', '.join(['8nm', '1nh', '8nh', '1nd', '2nd', '1nw', '2nw'])    )
+        return
+    elif onPsi and args.queue in ['8nm', '1nh', '8nh', '1nd', '2nd', '1nw', '2nw']:
+        print 'Queue {0} does not exist on {1}; Please pick from {2}'.format(
+            args.queue, host, ', '.join(['short', 'all', 'long' ])    )
+        return
+
 
     pwd = os.getcwd()
 
     jobscriptDir = os.path.join( pwd, 'jobscripts' )
     stdDir       = os.path.join( pwd, 'std' )
+    LSFJOBdirs   = glob('LSFJOB_*')
 
-    if os.path.isdir( jobscriptDir ): shutil.rmtree( jobscriptDir )
-    if os.path.isdir( stdDir ):       shutil.rmtree( stdDir )
+    # Clean old directories
+    if not args.keep:
+        print 'Cleaning up old directories'
+        shutil.rmtree( jobscriptDir )
+        
+        if onPsi:
+            shutil.rmtree( stdDir )
+        elif onLxplus: 
+            for LSFJOBdir in LSFJOBdirs: shutil.rmtree(LSFJOBdir)
 
-    os.makedirs( jobscriptDir )
-    os.makedirs( stdDir )
-
+    # Make directories if necessary
+    if not os.path.isdir(jobscriptDir): os.makedirs( jobscriptDir )
+    if onPsi and not os.path.isdir(stdDir): os.makedirs( stdDir )
+            
 
     cfgs = [
         # 'Config_electron_fullpt_Jun25.config',
@@ -62,10 +96,20 @@ def main():
         # 'Config_Sep26_photon_EB_ECALonly.config',
         # 'Config_Sep26_photon_EE_ECALonly.config',
 
-        'Config_Sep29_electron_EB_ECALonly.config',
-        'Config_Sep29_electron_EE_ECALonly.config',
+        # 'Config_Sep29_electron_EB_ECALonly.config',
+        # 'Config_Sep29_electron_EE_ECALonly.config',
+
+        'Config_Sep30_electron_EB_ECALTRK.config',
+        'Config_Sep30_electron_EB_ECALonly.config',
+        'Config_Sep30_electron_EE_ECALTRK.config',
+        'Config_Sep30_electron_EE_ECALonly.config',
+        'Config_Sep30_photon_EB_ECALonly.config',
+        'Config_Sep30_photon_EE_ECALonly.config',
 
         ]
+
+
+
 
     for cfg in cfgs:
         Make_jobscript( cfg, jobscriptDir, stdDir )
@@ -93,30 +137,27 @@ def Make_jobscript( cfg, jobscriptDir, stdDir ):
 
     # Setup
 
-    p( '#$ -o ' + stdDir )
-    p( '#$ -e ' + stdDir )
+    if onPsi: 
+        p( '#$ -o ' + stdDir )
+        p( '#$ -e ' + stdDir )
+        p( 'source /swshare/psit3/etc/profile.d/cms_ui_env.sh' )
+        p( 'source $VO_CMS_SW_DIR/cmsset_default.sh' )
 
-    p( 'source /swshare/psit3/etc/profile.d/cms_ui_env.sh' )
-    p( 'source $VO_CMS_SW_DIR/cmsset_default.sh' )
 
     # Going into right directory
     p( 'cd {0}/src'.format( os.path.abspath( os.environ['CMSSW_BASE'] ) ) )
     p( 'eval `scramv1 runtime -sh`' )
     p( 'cd RegressionTraining' )
 
-
     p( '#' + '-'*50 )
-    p( 'echo "Number of threads:"' )
-    p( 'echo $OMP_NUM_THREADS' )
+    p( 'echo "START OF RUN"' )
     p( '#' + '-'*50 )
 
     p( './regression.exe python/' + cfg )
 
     p( '#' + '-'*50 )
-    p( 'echo "Number of threads:"' )
-    p( 'echo $OMP_NUM_THREADS' )
+    p( 'echo "END OF RUN"' )
     p( '#' + '-'*50 )
-
 
     sh_fp.close()
 
@@ -130,15 +171,21 @@ def Make_jobscript( cfg, jobscriptDir, stdDir ):
     # ------------------
     # Parsing the command
 
-    # qsub part of command
-    cmd = 'qsub -q {0}.q '.format(args.queue)
+    if onPsi:
 
-    # Request more memory by default, but don't if argument is passed
-    if not args.normalmemory:
-        cmd += '-l h_vmem=5g '
+        # qsub part of command
+        cmd = 'qsub -q {0}.q '.format(args.queue)
 
-    # Pass the sh file
-    cmd += os.path.relpath(sh_file)
+        # Request more memory by default, but don't if argument is passed
+        if not args.normalmemory:
+            cmd += '-l h_vmem=5g '
+
+        # Pass the sh file
+        cmd += os.path.relpath(sh_file)
+
+    elif onLxplus:
+
+        cmd = 'bsub -q {0} -J {1} < '.format(args.queue, sh_file.rsplit('/',1)[-1].replace('.sh','') ) + os.path.relpath(sh_file)
 
 
     # ------------------
