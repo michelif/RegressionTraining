@@ -148,7 +148,8 @@ def Fit():
     if ecaltrk: plotdir += '_ECALTRK'
 
 
-    ntup_file = 'Ntup_Jul22_fullpt_testing_sample.root'
+    # ntup_file = 'Ntup_Jul22_fullpt_testing_sample.root'
+    ntup_file = 'Ntup_Jul22_fullpt_testing.root'
     tree_name = particle.capitalize() + 'Tree'
 
     pline()
@@ -344,7 +345,8 @@ def Fit():
         # Get the finer genPt bounds inside this global bin
         localPt_bounds = allPt_bounds[ allPt_bounds.index(min_globalPt) : allPt_bounds.index(max_globalPt) + 1 ]
 
-        genPt_name = 'GENPT{0}-{1}'.format( int(min_globalPt), int(max_globalPt) )
+        # genPt_name = 'GENPT{0}-{1}'.format( int(min_globalPt), int(max_globalPt) )
+        genPt_name = 'GENPT-{0:04d}-{1:04d}'.format( int(min_globalPt), int(max_globalPt) )
         genPt_sliceplot = SlicePlot(
             name     = genPt_name,
             longname = particle + region + ecaltrkstr + '_' + genPt_name,
@@ -364,11 +366,19 @@ def Fit():
 
 
         # ======================================
-        # genPt plot
+        # genEta plot
 
-        genEta_bounds = [ 0., 0.5, 1.0, 1.5, 2.0, 4.0 ]
+        if dobarrel:
+            genEta_bounds = [ 
+                0.0, 0.2, 0.4, 0.6, 0.8,
+                1.0, 1.2, 1.5,
+                ]
+        else:
+            genEta_bounds = [ 
+                1.5, 1.7, 1.9, 2.1, 2.3, 3.0
+                ]
 
-        genEta_name = 'GENETA{0}-{1}'.format( int(min_globalPt), int(max_globalPt) )
+        genEta_name = 'GENETA-{0:04d}-{1:04d}'.format( int(min_globalPt), int(max_globalPt) )
         genEta_sliceplot = SlicePlot(
             name     = genEta_name,
             longname = particle + region + ecaltrkstr + '_' + genEta_name,

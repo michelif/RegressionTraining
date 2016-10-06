@@ -25,8 +25,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument( '--test', action='store_true', help='Does not submit the job, but creates the .sh file and prints')
 parser.add_argument( '-q', '--queue',
     type=str, choices=['short', 'all', 'long', '8nm', '1nh', '8nh', '1nd', '2nd', '1nw', '2nw' ],
-    default='long', help='which queue to submit to')
-# parser.add_argument( '-n', '--normalmemory', action='store_true', help='By default more memory is requested; this option disables that')
+    default='short', help='which queue to submit to')
+parser.add_argument( '-n', '--normalmemory', action='store_true', help='By default more memory is requested; this option disables that')
 parser.add_argument( '-k', '--keep', action='store_true', help='Does not clean the output and jobscript directories')
 args = parser.parse_args()
 
@@ -76,12 +76,12 @@ def main():
             
 
     WSs = [
-        '../Config_Sep30_electron_EB_ECALonly_results.root',
-        '../Config_Sep30_electron_EB_ECALTRK_results.root',
-        '../Config_Sep30_electron_EE_ECALonly_results.root',
-        '../Config_Sep30_electron_EE_ECALTRK_results.root',
-        '../Config_Sep30_photon_EB_ECALonly_results.root',
-        '../Config_Sep30_photon_EE_ECALonly_results.root',
+        # '../savedResults/Config_Sep30_electron_EB_ECALonly_results.root',
+        '../savedResults/Config_Sep30_electron_EB_ECALTRK_results.root',
+        # '../savedResults/Config_Sep30_electron_EE_ECALonly_results.root',
+        '../savedResults/Config_Sep30_electron_EE_ECALTRK_results.root',
+        # '../savedResults/Config_Sep30_photon_EB_ECALonly_results.root',
+        # '../savedResults/Config_Sep30_photon_EE_ECALonly_results.root',
         ]
 
 
@@ -152,9 +152,9 @@ def Make_jobscript( WS, jobscriptDir, stdDir ):
         # qsub part of command
         cmd = 'qsub -q {0}.q '.format(args.queue)
 
-        # # Request more memory by default, but don't if argument is passed
-        # if not args.normalmemory:
-        #     cmd += '-l h_vmem=5g '
+        # Request more memory by default, but don't if argument is passed
+        if not args.normalmemory:
+            cmd += '-l h_vmem=5g '
 
         # Pass the sh file
         cmd += os.path.relpath(sh_file)

@@ -83,10 +83,17 @@ class SlicePlot:
             print '  '*verbosity + text
 
     # Save a canvas
-    def Save( self, canvas, filename ):
+    def Save( self, canvas, filename, pngs=True ):
         outputname = os.path.join( self.plotdir, self.name + '_' + filename )
+        
         self.p( 'Saving canvas with filename ' + outputname, 2 )
         canvas.SaveAs( outputname + '.pdf' )
+
+        if pngs:
+            canvas.SaveAs( outputname + '.png' )
+
+
+
 
 # Set class methods from other modules
 
