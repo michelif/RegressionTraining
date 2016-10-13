@@ -99,12 +99,16 @@ def main():
         # 'Config_Sep29_electron_EB_ECALonly.config',
         # 'Config_Sep29_electron_EE_ECALonly.config',
 
-        'Config_Sep30_electron_EB_ECALTRK.config',
-        'Config_Sep30_electron_EB_ECALonly.config',
-        'Config_Sep30_electron_EE_ECALTRK.config',
-        'Config_Sep30_electron_EE_ECALonly.config',
-        'Config_Sep30_photon_EB_ECALonly.config',
-        'Config_Sep30_photon_EE_ECALonly.config',
+        # These succesfully ran
+        # 'Config_Sep30_electron_EB_ECALTRK.config',
+        # 'Config_Sep30_electron_EB_ECALonly.config',
+        # 'Config_Sep30_electron_EE_ECALTRK.config',
+        # 'Config_Sep30_electron_EE_ECALonly.config',
+        # 'Config_Sep30_photon_EB_ECALonly.config',
+        # 'Config_Sep30_photon_EE_ECALonly.config',
+
+        'Config_Oct06_electron_EB_SAMETGT.config',
+        'Config_Oct06_electron_EE_SAMETGT.config',
 
         ]
 

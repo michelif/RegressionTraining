@@ -35,7 +35,11 @@ def Make_conf(Verbose=True):
 
     # ntup_path = os.path.join( '/data/userdata/rclsa/ElectronTrees/Jul17/' )
     # ntup_path = os.path.join( os.environ['CMSSW_BASE'], 'src/NTuples' )
-    ntup_path = os.path.join( '/mnt/t3nfs01/data01/shome/tklijnsm/Samples/RegressionSamples', '22Jul_samples' )
+
+    if os.environ['HOSTNAME'] == 't3ui17':
+        ntup_path = os.path.join( '/mnt/t3nfs01/data01/shome/tklijnsm/Samples/RegressionSamples', '22Jul_samples' )
+    else:
+        ntup_path = '/afs/cern.ch/work/t/tklijnsm/public/CMSSW_8_0_4/src/NTuples'
 
     datestr = strftime( '%b%d' )
 
@@ -111,9 +115,9 @@ def Make_conf(Verbose=True):
                 config.CutError         = "eventNumber%{0}==0 && eventNumber%{1}!=0".format( divideNumber, 2*divideNumber )
 
                 # # TEMPORARY: cut events drastically for test mode
-                config.CutBase  += " && NtupID<10000"
-                config.CutComb  += " && NtupID<10000"
-                config.CutError += " && NtupID<10000"
+                config.CutBase  += " && NtupID<5000"
+                config.CutComb  += " && NtupID<5000"
+                config.CutError += " && NtupID<5000"
 
 
                 ########################################

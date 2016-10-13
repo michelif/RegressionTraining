@@ -148,8 +148,8 @@ def Fit():
     if ecaltrk: plotdir += '_ECALTRK'
 
 
-    # ntup_file = 'Ntup_Jul22_fullpt_testing_sample.root'
-    ntup_file = 'Ntup_Jul22_fullpt_testing.root'
+    ntup_file = 'Ntup_Jul22_fullpt_testing_sample.root'
+    # ntup_file = 'Ntup_Jul22_fullpt_testing.root'
     tree_name = particle.capitalize() + 'Tree'
 
     pline()
