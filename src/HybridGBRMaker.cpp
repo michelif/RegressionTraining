@@ -355,7 +355,11 @@ void HybridGBRMaker::runEB(const string& cutBase, const string& cutEB, const str
 
     //define transformations corresponding to parameter bounds for non-parametric outputs  
     RooRealConstraint sigwidthlimEB("sigwidthlimEB","",*sigwidthtEB,0.0002,0.5);
-    RooRealConstraint sigmeanlimEB("sigmeanlimEB","",*sigmeantEB,0.2,2.0);
+    
+    // THOMAS: 0.2 to 2.0 is probably to restrictive - use -1.0 to 3.0 instead
+    // RooRealConstraint sigmeanlimEB("sigmeanlimEB","",*sigmeantEB,0.2,2.0);
+    RooRealConstraint sigmeanlimEB("sigmeanlimEB","",*sigmeantEB,-1.0,3.0);
+
     RooRealConstraint signlimEB("signlimEB","",*signtEB,1.01,5000.); 
     RooRealConstraint sign2limEB("sign2limEB","",*sign2tEB,1.01,5000.); 
 
