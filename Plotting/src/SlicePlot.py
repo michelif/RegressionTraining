@@ -80,7 +80,7 @@ class SlicePlot:
 
     def p( self, text, verbosity=2 ):
         if verbosity <= self.Verbosity:
-            print '  '*verbosity + text
+            print '    '*verbosity + text
 
     # Save a canvas
     def Save( self, canvas, filename, pngs=True ):

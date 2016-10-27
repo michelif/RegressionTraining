@@ -49,24 +49,6 @@ ROOT.gROOT.LoadMacro( os.getcwd() + "/src/LoadDataset.C" )
 
 # Paths to regression results
 result_path = os.getcwd()
-# result_path = '/mnt/t3nfs01/data01/shome/tklijnsm/EGM/CMSSW_8_0_4/src/RegressionTraining/Plotting'
-physpath_ws = lambda filename: os.path.join( result_path, filename )
-
-
-# # Paths to Ntuples
-# if os.environ['USER'] == 'tklijnsm':
-#     ntup_path = '/mnt/t3nfs01/data01/shome/tklijnsm/EGM/CMSSW_8_0_4/src/NTuples'
-# else:
-#     # Different users can implement different paths here
-#     ntup_path = '/mnt/t3nfs01/data01/shome/tklijnsm/EGM/CMSSW_8_0_4/src/NTuples'
-
-if os.environ['HOSTNAME'] == 't3ui17':
-    ntup_path = os.path.join( '/mnt/t3nfs01/data01/shome/tklijnsm/Samples/RegressionSamples', '22Jul_samples' )
-else:
-    ntup_path = '/afs/cern.ch/work/t/tklijnsm/public/CMSSW_8_0_4/src/NTuples'
-
-physpath_ntup = lambda filename: os.path.join( ntup_path, filename )
-
 
 
 ########################################
@@ -74,6 +56,14 @@ physpath_ntup = lambda filename: os.path.join( ntup_path, filename )
 ########################################
 
 def Fit():
+
+    if os.environ['HOSTNAME'] == 't3ui17':
+        defaultNtupPath = os.path.join( '/mnt/t3nfs01/data01/shome/tklijnsm/Samples/RegressionSamples', '22Jul_samples' )
+    else:
+        defaultNtupPath = '/afs/cern.ch/work/t/tklijnsm/public/CMSSW_8_0_4/src/NTuples'
+
+    defaultNtup = os.path.join( defaultNtupPath, 'Ntup_Jul22_fullpt_testing_sample.root' )
+
 
     ########################################
     # Command line options
@@ -85,6 +75,11 @@ def Fit():
     parser.add_argument( '--region', type=str, default='TODO', choices=[ 'EB', 'EE', 'TODO' ] )
     parser.add_argument( '--ecaltrk', action='store_true', help='Tells the program trk variables are included')
     parser.add_argument( '--testrun', action='store_true', help='selects only a few events for testing purposes')
+
+    parser.add_argument( '-s', '--second-regression', action='store_true', help='Use this flag if the sample is trained twice')
+    parser.add_argument( '--ntup', type=str, default=defaultNtup, help='Pass path to an Ntuple (current default is {0})'.format(defaultNtup) )
+    parser.add_argument( '--ptbins', metavar='N', type=float, nargs='+',
+                         help='supply a list of global pt bins (there is a default list in the code)' )
     args = parser.parse_args()
 
 
@@ -93,7 +88,7 @@ def Fit():
     ########################################
 
     # This is the _results.root filename
-    ws_file = args.resultfile
+    ws_file = os.path.abspath( args.resultfile )
 
     # Region needs to be determined carefully because the right workspace needs to be loaded
     if args.region == 'TODO':
@@ -146,11 +141,10 @@ def Fit():
 
     plotdir = 'plotsPY_{0}_{1}'.format( particle, region )
     if ecaltrk: plotdir += '_ECALTRK'
+    if args.second_regression: plotdir += '_secondRegression'
 
-
-    ntup_file = 'Ntup_Jul22_fullpt_testing_sample.root'
-    # ntup_file = 'Ntup_Jul22_fullpt_testing.root'
     tree_name = particle.capitalize() + 'Tree'
+    if args.second_regression: tree_name = 'correction'
 
     pline()
     print 'Summary of input data for Fit.py:'
@@ -159,7 +153,7 @@ def Fit():
     print '    region:    ' + region
     print '    ecaltrk:   ' + str(ecaltrk)
     print '    plotdir:   ' + plotdir
-    print '    ntuple:    ' + ntup_file
+    print '    ntuple:    ' + args.ntup
     print '    ntup tree: ' + tree_name
 
 
@@ -173,7 +167,7 @@ def Fit():
     pline()
     print 'Getting workspace'
 
-    LWS = ROOT.LoadWorkspace( physpath_ws(ws_file), dobarrel )
+    LWS = ROOT.LoadWorkspace( ws_file, dobarrel )
     tgtvar     = LWS.tgtvar
     sigpdf     = LWS.sigpdf
     sigmeanlim = LWS.sigmeanlim
@@ -200,6 +194,10 @@ def Fit():
     fbrem             = ROOT.RooRealVar( "fbrem", "fbrem", 0.)
     ECALweight        = ROOT.RooRealVar( "ECALweight", "ECALweight", 0. )
     TRKweight         = ROOT.RooRealVar( "TRKweight",  "TRKweight", 0. )
+
+    # These variables are only available for second-regression mode
+    response          = ROOT.RooRealVar( "response", "response", 0.)
+    resolution        = ROOT.RooRealVar( "resolution", "resolution", 0.)
 
 
     # ======================================
@@ -245,6 +243,26 @@ def Fit():
             TRKweight,
             ])
 
+    if args.second_regression:
+        # Use different variables in this case
+        Vars = [
+            tgtvar,
+            meantgt.FuncVars(),
+            scRawEnergy,
+            scPreshowerEnergy,
+            genEta,
+            genE,
+            genPt,
+
+            cor74E,
+            response,
+            resolution,
+
+            pt,
+            trkEta,
+            ]
+
+
     VarsArgList = ROOT.RooArgList()
     for Var in Vars: VarsArgList.add(Var)
 
@@ -256,7 +274,7 @@ def Fit():
     if args.testrun: eventcut = "eventNumber%20==1||eventNumber%20==0"
 
     print 'Getting dataset (using the macro)'
-    hdata = ROOT.LoadDataset( eventcut, dobarrel, physpath_ntup(ntup_file), 'een_analyzer', tree_name, VarsArgList )
+    hdata = ROOT.LoadDataset( eventcut, dobarrel, args.ntup, 'een_analyzer', tree_name, VarsArgList )
     print '  Using {0} entries'.format( hdata.numEntries() )
 
 
@@ -281,14 +299,8 @@ def Fit():
     ecor74var.setBins(800)
 
 
-    if not ecaltrk:
-        ecorArgList = ROOT.RooArgList( sigmeanlim, tgtvar )
-        ecorformula = ROOT.RooFormulaVar(
-            'ecorformula', 'corr.',
-            '(@0/@1)',
-            ecorArgList
-            )
-    else:
+    if not args.second_regression:
+        # ecor uses target
         ecorArgList = ROOT.RooArgList( sigmeanlim, tgtvar )
         ecorformula = ROOT.RooFormulaVar(
             'ecorformula', 'corr.',
@@ -296,12 +308,44 @@ def Fit():
             ecorArgList
             )
 
-    # ecorArgList = ROOT.RooArgList( sigmeanlim, tgtvar )
-    # ecorformula = ROOT.RooFormulaVar( 'ecorformula', 'corr.', '(@0/@1)', ecorArgList )
+        ecorvar = hdata.addColumn(ecorformula)
+        ecorvar.setRange( 0., 2. )
+        ecorvar.setBins(800)
 
-    ecorvar = hdata.addColumn(ecorformula)
-    ecorvar.setRange( 0., 2. )
-    ecorvar.setBins(800)
+    elif args.second_regression:
+        # distinguish between corrected ECAL and corrected 2step
+        
+        ecalCorrArgList = ROOT.RooArgList( response, scRawEnergy, scPreshowerEnergy, genE )
+        ecalCorrFormula = ROOT.RooFormulaVar(
+            'ecalCorrFormula', 'corr. ECAL',
+            '(response * ((scRawEnergy+scPreshowerEnergy)/genEnergy))',
+            ecalCorrArgList
+            )
+        ecalCorrVar = hdata.addColumn(ecalCorrFormula)
+        ecalCorrVar.setRange( 0., 2. )
+        ecalCorrVar.setBins(800)
+
+        trkCorrArgList = ROOT.RooArgList( sigmeanlim, tgtvar )
+        trkCorrFormula = ROOT.RooFormulaVar(
+            'trkCorrFormula', 'corr. ECAL+TRK',
+            '(@0/@1)',
+            trkCorrArgList
+            )
+
+        trkCorrVar = hdata.addColumn(trkCorrFormula)
+        trkCorrVar.setRange( 0., 2. )
+        trkCorrVar.setBins(800)
+
+        Ep74CorrArgList = ROOT.RooArgList( pt, trkEta, genE )
+        Ep74CorrFormula = ROOT.RooFormulaVar(
+            'Ep74CorrFormula', 'Ep Comb. (74X)',
+            '((@0*TMath::CosH(@1))/@2)',
+            Ep74CorrArgList
+            )
+
+        Ep74CorrVar = hdata.addColumn(Ep74CorrFormula)
+        Ep74CorrVar.setRange( 0., 2. )
+        Ep74CorrVar.setBins(800)
 
 
 
@@ -313,13 +357,18 @@ def Fit():
     pline()
     print 'Start fitting\n'
 
-    globalPt_bounds = [
-        0.,
-        100.,
-        500.,
-        2500.,
-        6500.,
-        ]
+    if not args.ptbins:
+        # Default pt bins
+        globalPt_bounds = [
+            0.,
+            100.,
+            500.,
+            2500.,
+            6500.,
+            ]
+    else:
+        globalPt_bounds = args.ptbins
+
 
     allPt_bounds = [
         0.,    5.,    10.,   15.,   20.,   25.,  30.,   40.,   50., 60.,   80.,   100.,
@@ -334,9 +383,24 @@ def Fit():
         min_globalPt = globalPt_bounds[i_globalPtBin]
         max_globalPt = globalPt_bounds[i_globalPtBin+1]
 
-        print '  Reducing total dataset to genPt between {0} and {1}'.format( min_globalPt, max_globalPt )
+        print '    Reducing total dataset to genPt between {0} and {1}'.format( min_globalPt, max_globalPt )
         hdata_globalPtBin = hdata.reduce( 'genPt>{0}&&genPt<{1}'.format( min_globalPt, max_globalPt ) )
-        print '    Number of entries in this genPt selection: ' + str(hdata_globalPtBin.numEntries())
+        print '        Number of entries in this genPt selection: ' + str(hdata_globalPtBin.numEntries())
+
+        if not args.second_regression:
+            histogramVariables = [
+                rawvar,
+                ecor74var,
+                ecorvar,
+                ]
+        elif args.second_regression:
+            histogramVariables = [
+                rawvar,
+                ecor74var,
+                ecalCorrVar,
+                trkCorrVar,
+                Ep74CorrVar,
+                ]
 
 
         # ======================================
@@ -353,11 +417,7 @@ def Fit():
             plotdir  = plotdir
             )
         genPt_sliceplot.SetDataset( hdata_globalPtBin )
-        genPt_sliceplot.SetHistVars([
-            rawvar,
-            ecor74var,
-            ecorvar,
-            ])
+        genPt_sliceplot.SetHistVars(histogramVariables)
         genPt_sliceplot.SetSliceVar(
             genPt,
             localPt_bounds,
@@ -365,36 +425,36 @@ def Fit():
         genPt_sliceplot.FitSlices()
 
 
-        # ======================================
-        # genEta plot
+        # # ======================================
+        # # genEta plot
 
-        if dobarrel:
-            genEta_bounds = [ 
-                0.0, 0.2, 0.4, 0.6, 0.8,
-                1.0, 1.2, 1.5,
-                ]
-        else:
-            genEta_bounds = [ 
-                1.5, 1.7, 1.9, 2.1, 2.3, 3.0
-                ]
+        # if dobarrel:
+        #     genEta_bounds = [ 
+        #         0.0, 0.2, 0.4, 0.6, 0.8,
+        #         1.0, 1.2, 1.5,
+        #         ]
+        # else:
+        #     genEta_bounds = [ 
+        #         1.5, 1.7, 1.9, 2.1, 2.3, 3.0
+        #         ]
 
-        genEta_name = 'GENETA-{0:04d}-{1:04d}'.format( int(min_globalPt), int(max_globalPt) )
-        genEta_sliceplot = SlicePlot(
-            name     = genEta_name,
-            longname = particle + region + ecaltrkstr + '_' + genEta_name,
-            plotdir  = plotdir
-            )
-        genEta_sliceplot.SetDataset( hdata_globalPtBin )
-        genEta_sliceplot.SetHistVars([
-            rawvar,
-            ecor74var,
-            ecorvar,
-            ])
-        genEta_sliceplot.SetSliceVar(
-            genEta,
-            genEta_bounds,
-            )
-        genEta_sliceplot.FitSlices()
+        # genEta_name = 'GENETA-{0:04d}-{1:04d}'.format( int(min_globalPt), int(max_globalPt) )
+        # genEta_sliceplot = SlicePlot(
+        #     name     = genEta_name,
+        #     longname = particle + region + ecaltrkstr + '_' + genEta_name,
+        #     plotdir  = plotdir
+        #     )
+        # genEta_sliceplot.SetDataset( hdata_globalPtBin )
+        # genEta_sliceplot.SetHistVars([
+        #     rawvar,
+        #     ecor74var,
+        #     ecorvar,
+        #     ])
+        # genEta_sliceplot.SetSliceVar(
+        #     genEta,
+        #     genEta_bounds,
+        #     )
+        # genEta_sliceplot.FitSlices()
 
 
 

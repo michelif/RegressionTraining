@@ -91,8 +91,8 @@ def MakePlots_comparison( self, comp ):
             H2.Draw('HISTSAME')
 
             leg = ROOT.TLegend( 0.20, 0.5, 0.45, 0.9 )
-            leg.AddEntry( H.GetName(),  'ECALonly', 'l' )
-            leg.AddEntry( H2.GetName(), 'ECAL+TRK', 'l' )
+            leg.AddEntry( H.GetName(),  'arg1', 'l' )
+            leg.AddEntry( H2.GetName(), 'arg2', 'l' )
             legs.append(leg)
             legs[-1].Draw('SAME')
 

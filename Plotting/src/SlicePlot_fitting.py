@@ -65,12 +65,12 @@ def FitOneSlice( self, hdata_reduced, histvar ):
     hdata_fit = hdata_reduced.reduce( ROOT.RooArgSet(histvar) )
 
     # Fit parameters
-    mean = ROOT.RooRealVar( RootName(), RootName(), 1.,0.9,1.1);
-    sig  = ROOT.RooRealVar( RootName(), RootName(), 0.01,0.0002,0.8);
-    a1   = ROOT.RooRealVar( RootName(), RootName(), 3,0.05,10);
-    a2   = ROOT.RooRealVar( RootName(), RootName(), 3,0.05,10);
-    n1   = ROOT.RooRealVar( RootName(), RootName(), 3,1.01,500);
-    n2   = ROOT.RooRealVar( RootName(), RootName(), 3,1.01,500);
+    mean = ROOT.RooRealVar( RootName(), RootName(), 1.,   0.9,    1.1 );
+    sig  = ROOT.RooRealVar( RootName(), RootName(), 0.01, 0.0002, 0.8 );
+    a1   = ROOT.RooRealVar( RootName(), RootName(), 3,    0.05,   10 );
+    a2   = ROOT.RooRealVar( RootName(), RootName(), 3,    0.05,   10 );
+    n1   = ROOT.RooRealVar( RootName(), RootName(), 3,    1.01,   500 );
+    n2   = ROOT.RooRealVar( RootName(), RootName(), 3,    1.01,   500 );
 
     # Fit function
     pdfCB = ROOT.RooDoubleCBFast(
@@ -81,6 +81,9 @@ def FitOneSlice( self, hdata_reduced, histvar ):
 
     self.p( 'Fitting crystal ball to dataset (histvar: {0}, fitrange: {1} to {2})'.format(
             histvar.GetName(), self.fit_x_min, self.fit_x_max ), 3 )
+
+    self.p( 'Number of entries in fit dataset: ' + str(hdata_fit.numEntries()), 4 )
+    
 
     pdfCB.fitTo(
         hdata_fit,
@@ -94,6 +97,11 @@ def FitOneSlice( self, hdata_reduced, histvar ):
 
     # Make a histogram of the reduced dataset for easy plotting later
     fitdata = super(hdata_fit.__class__, hdata_fit).createHistogram( RootName(), histvar, ROOT.RooFit.Binning(200) )
+    self.p( 'Number of entries in fit histogram: ' + str(fitdata.GetEntries()), 4 )
+    self.p( 'Mean of fit histogram: ' + str(fitdata.GetMean()), 5 )
+
+    if fitdata.GetMean() > 1.5 or fitdata.GetMean() < 0.5:
+        self.p( 'WARNING: strange mean (fit is designed for 0.5 < mean < 1.5)', 5 )
 
     # Append results
     self.Fit[histvar.GetName()]['CBvals'].append(
