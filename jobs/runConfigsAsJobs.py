@@ -28,6 +28,11 @@ parser.add_argument( '-q', '--queue',
     default='long', help='which queue to submit to')
 parser.add_argument( '-n', '--normalmemory', action='store_true', help='By default more memory is requested; this option disables that')
 parser.add_argument( '-k', '--keep', action='store_true', help='Does not clean the output and jobscript directories')
+parser.add_argument( '-c', '--configs',
+    metavar='N', type=str, nargs='+',
+    default='none',
+    help='pass a list of config files'
+    )
 args = parser.parse_args()
 
 
@@ -75,43 +80,46 @@ def main():
     if onPsi and not os.path.isdir(stdDir): os.makedirs( stdDir )
             
 
-    cfgs = [
-        # 'Config_electron_fullpt_Jun25.config',
-        # 'Config_electron_fullpt_Jun25_OLDVARS.config',
-        # 'Config_electron_lowpt_Jun25.config',
-        # 'Config_electron_lowpt_Jun25_OLDVARS.config',
-        # 'Config_photon_fullpt_Jun25.config',
-        # 'Config_photon_fullpt_Jun25_OLDVARS.config',
-        # 'Config_photon_lowpt_Jun25.config',
-        # 'Config_photon_lowpt_Jun25_OLDVARS.config',
-        # 'Config_electron_Jul12.config',
-        # 'Config_photon_Jul12.config',
-        # 'Config_electron_Jul13.config',
-        # 'Config_photon_Jul13.config',
 
-        # 'Config_Sep26_electron_EB_ECALTRK.config',
-        # 'Config_Sep26_electron_EB_ECALonly.config',
-        # 'Config_Sep26_electron_EE_ECALTRK.config',
-        # 'Config_Sep26_electron_EE_ECALonly.config',
-        # 'Config_Sep26_photon_EB_ECALonly.config',
-        # 'Config_Sep26_photon_EE_ECALonly.config',
+    if args.configs == 'none':
+        cfgs = [
+            # 'Config_electron_fullpt_Jun25.config',
+            # 'Config_electron_fullpt_Jun25_OLDVARS.config',
+            # 'Config_electron_lowpt_Jun25.config',
+            # 'Config_electron_lowpt_Jun25_OLDVARS.config',
+            # 'Config_photon_fullpt_Jun25.config',
+            # 'Config_photon_fullpt_Jun25_OLDVARS.config',
+            # 'Config_photon_lowpt_Jun25.config',
+            # 'Config_photon_lowpt_Jun25_OLDVARS.config',
+            # 'Config_electron_Jul12.config',
+            # 'Config_photon_Jul12.config',
+            # 'Config_electron_Jul13.config',
+            # 'Config_photon_Jul13.config',
 
-        # 'Config_Sep29_electron_EB_ECALonly.config',
-        # 'Config_Sep29_electron_EE_ECALonly.config',
+            # 'Config_Sep26_electron_EB_ECALTRK.config',
+            # 'Config_Sep26_electron_EB_ECALonly.config',
+            # 'Config_Sep26_electron_EE_ECALTRK.config',
+            # 'Config_Sep26_electron_EE_ECALonly.config',
+            # 'Config_Sep26_photon_EB_ECALonly.config',
+            # 'Config_Sep26_photon_EE_ECALonly.config',
 
-        # These succesfully ran
-        # 'Config_Sep30_electron_EB_ECALTRK.config',
-        # 'Config_Sep30_electron_EB_ECALonly.config',
-        # 'Config_Sep30_electron_EE_ECALTRK.config',
-        # 'Config_Sep30_electron_EE_ECALonly.config',
-        # 'Config_Sep30_photon_EB_ECALonly.config',
-        # 'Config_Sep30_photon_EE_ECALonly.config',
+            # 'Config_Sep29_electron_EB_ECALonly.config',
+            # 'Config_Sep29_electron_EE_ECALonly.config',
 
-        'Config_Oct06_electron_EB_SAMETGT.config',
-        'Config_Oct06_electron_EE_SAMETGT.config',
+            # These succesfully ran
+            # 'Config_Sep30_electron_EB_ECALTRK.config',
+            # 'Config_Sep30_electron_EB_ECALonly.config',
+            # 'Config_Sep30_electron_EE_ECALTRK.config',
+            # 'Config_Sep30_electron_EE_ECALonly.config',
+            # 'Config_Sep30_photon_EB_ECALonly.config',
+            # 'Config_Sep30_photon_EE_ECALonly.config',
 
-        ]
+            # 'Config_Oct06_electron_EB_SAMETGT.config',
+            # 'Config_Oct06_electron_EE_SAMETGT.config',
 
+            ]
+    else:
+        cfgs = args.configs
 
 
 
