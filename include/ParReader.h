@@ -83,11 +83,17 @@ class ParReader
 
 
 
-    private:
         std::string m_trainer;
         std::vector<RegressionParameters> m_regParams;
         std::string m_outputDirectory;
         std::string m_factoryOptions;
+
+
+    private:
+        // std::string m_trainer;
+        // std::vector<RegressionParameters> m_regParams;
+        // std::string m_outputDirectory;
+        // std::string m_factoryOptions;
         
 
 
