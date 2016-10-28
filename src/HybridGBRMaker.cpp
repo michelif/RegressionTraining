@@ -609,7 +609,7 @@ void HybridGBRMaker::runEE(const string& cutBase, const string& cutEE, const str
 
     //define transformations corresponding to parameter bounds for non-parametric outputs  
     RooRealConstraint sigwidthlimEE("sigwidthlimEE","",*sigwidthtEE,0.0002,0.5);
-    RooRealConstraint sigmeanlimEE("sigmeanlimEE","",*sigmeantEE,0.2,2.0);
+    RooRealConstraint sigmeanlimEE("sigmeanlimEE","",*sigmeantEE,-1.0,3.0); // THOMAS: Up from 0.2 to 2.0
     RooRealConstraint signlimEE("signlimEE","",*signtEE,1.01,5000.); 
     RooRealConstraint sign2limEE("sign2limEE","",*sign2tEE,1.01,5000.); 
 
@@ -805,7 +805,8 @@ void HybridGBRMaker::runComb(const string& cutComb, const string& options)
                 m_variablesEB, m_variablesEE,
                 m_cutEB, m_cutEE,
                 "BDTresponse",
-                0.2, 2.,
+                // 0.2, 2., // THOMAS: Probably to narrow a range!
+                -1.0, 3.,
                 m_doEB
                 );
 
