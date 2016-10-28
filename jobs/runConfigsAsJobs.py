@@ -25,7 +25,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument( '--test', action='store_true', help='Does not submit the job, but creates the .sh file and prints')
 parser.add_argument( '-q', '--queue',
     type=str, choices=['short', 'all', 'long', '8nm', '1nh', '8nh', '1nd', '2nd', '1nw', '2nw' ],
-    default='long', help='which queue to submit to')
+    default='2nw', help='which queue to submit to')
 parser.add_argument( '-n', '--normalmemory', action='store_true', help='By default more memory is requested; this option disables that')
 parser.add_argument( '-k', '--keep', action='store_true', help='Does not clean the output and jobscript directories')
 parser.add_argument( '-c', '--configs',
@@ -81,52 +81,10 @@ def main():
             
 
 
-    if args.configs == 'none':
-        cfgs = [
-            # 'Config_electron_fullpt_Jun25.config',
-            # 'Config_electron_fullpt_Jun25_OLDVARS.config',
-            # 'Config_electron_lowpt_Jun25.config',
-            # 'Config_electron_lowpt_Jun25_OLDVARS.config',
-            # 'Config_photon_fullpt_Jun25.config',
-            # 'Config_photon_fullpt_Jun25_OLDVARS.config',
-            # 'Config_photon_lowpt_Jun25.config',
-            # 'Config_photon_lowpt_Jun25_OLDVARS.config',
-            # 'Config_electron_Jul12.config',
-            # 'Config_photon_Jul12.config',
-            # 'Config_electron_Jul13.config',
-            # 'Config_photon_Jul13.config',
-
-            # 'Config_Sep26_electron_EB_ECALTRK.config',
-            # 'Config_Sep26_electron_EB_ECALonly.config',
-            # 'Config_Sep26_electron_EE_ECALTRK.config',
-            # 'Config_Sep26_electron_EE_ECALonly.config',
-            # 'Config_Sep26_photon_EB_ECALonly.config',
-            # 'Config_Sep26_photon_EE_ECALonly.config',
-
-            # 'Config_Sep29_electron_EB_ECALonly.config',
-            # 'Config_Sep29_electron_EE_ECALonly.config',
-
-            # These succesfully ran
-            # 'Config_Sep30_electron_EB_ECALTRK.config',
-            # 'Config_Sep30_electron_EB_ECALonly.config',
-            # 'Config_Sep30_electron_EE_ECALTRK.config',
-            # 'Config_Sep30_electron_EE_ECALonly.config',
-            # 'Config_Sep30_photon_EB_ECALonly.config',
-            # 'Config_Sep30_photon_EE_ECALonly.config',
-
-            # 'Config_Oct06_electron_EB_SAMETGT.config',
-            # 'Config_Oct06_electron_EE_SAMETGT.config',
-
-            ]
-    else:
-        cfgs = args.configs
-
-
-
-    for cfg in cfgs:
+    for cfg in args.configs:
         Make_jobscript( cfg, jobscriptDir, stdDir )
 
-        if cfg != cfgs[-1] and not args.test:
+        if cfg != args.configs[-1] and not args.test:
             nSleep = 5
             print 'Sleeping {0} seconds to prevent jobs from interfering with one another'.format(nSleep)
             sleep(nSleep)
@@ -138,6 +96,9 @@ def main():
 ########################################
 
 def Make_jobscript( cfg, jobscriptDir, stdDir ):
+
+    cfg_fullpath = os.path.abspath( cfg )
+    cfg = os.path.basename(cfg)
 
     # ======================================
     # Creating the sh file
@@ -162,13 +123,13 @@ def Make_jobscript( cfg, jobscriptDir, stdDir ):
     p( 'cd RegressionTraining' )
 
     p( '#' + '-'*50 )
-    p( 'echo "START OF RUN"' )
+    p( 'echo "START OF RUN FOR {0}"'.format(cfg) )
     p( '#' + '-'*50 )
 
-    p( './regression.exe python/' + cfg )
+    p( './regression.exe ' + cfg_fullpath )
 
     p( '#' + '-'*50 )
-    p( 'echo "END OF RUN"' )
+    p( 'echo "END OF RUN FOR {0}"'.format(cfg) )
     p( '#' + '-'*50 )
 
     sh_fp.close()
