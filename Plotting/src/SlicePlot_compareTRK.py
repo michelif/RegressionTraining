@@ -64,15 +64,19 @@ def MakePlots_comparison( self, comp ):
             H.SetLineColor(2)
             H.Draw('HIST')
 
+            histvartitle = 'E_{{{0}}}/E_{{true}}'.format( histvar.GetTitle() )
+            # Default is to assume it's an energy ratio, if not change the plotting label a bit
+            if hasattr( self, 'notAnEnergyRatio' ) and self.notAnEnergyRatio:
+                histvartitle = histvar.GetTitle()
 
-            H.SetTitle( 'E_{{{0}}}/E_{{true}} ( {2} < {1} < {3} )'.format(
-                histvar.GetTitle(),
+            H.SetTitle( '{0} ( {2} < {1} < {3} )'.format(
+                histvartitle,
                 self.slicevarname,
                 self.bounds[i_bin], self.bounds[i_bin+1]
                 ))
             H.SetTitleSize(0.06);
 
-            H.GetXaxis().SetTitle( 'E_{{{0}}}/E_{{true}}'.format( histvar.GetTitle() ))
+            H.GetXaxis().SetTitle( histvartitle )
             H.GetXaxis().SetRangeUser( 0., 1.3 );
 
             H.GetXaxis().SetLabelSize(0.05);

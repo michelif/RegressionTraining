@@ -35,6 +35,7 @@ def Plot():
     parser.add_argument( '--plotdir', type=str, help='Overwrites the default plot directory and uses this one' )
     parser.add_argument( 'picklefiles', metavar='N', type=str, nargs='+', help='Give a list of fitted pickle files to plot')
     parser.add_argument( '--compare', action='store_true', help='Compare the two given pickle files')
+    parser.add_argument( '--override', action='store_true', help='Overrrides certain plot options (set in Plot.py)')
     args = parser.parse_args()    
 
 
@@ -52,6 +53,18 @@ def Plot():
 
             with open( pickle_fn, 'rb' ) as pickle_fp:
                 sliceplot = pickle.load( pickle_fp )
+
+
+            if args.override:
+                sliceplot.sliceplot_y_min = 0.99
+                sliceplot.sliceplot_y_max = 1.01
+
+                if os.path.basename(pickle_fn) == 'electronEE_GENPT-0000-0100.pickle':
+                    print '    Setting sigma range to larger values'
+                    sliceplot.sliceplotsigma_y_min   = 0.0
+                    sliceplot.sliceplotsigma_y_max   = 0.25
+
+
 
             if args.plotdir:
                 sliceplot.plotdir = args.plotdir

@@ -6,7 +6,18 @@ from array import array
 import ROOT
 ROOT.gROOT.SetBatch(True)
 
-c = ROOT.TCanvas( 'c', 'c', 1000, 800 )
+
+cWidth = 887
+cHeight = int( (800./1000.) * cWidth )
+
+c = ROOT.TCanvas( 'c', 'c', cWidth, cHeight )
+
+
+xAxisLabelDict = {
+    'genPt' : 'p_{t, gen} [GeV]',
+    }
+
+
 
 
 def MakePlots_standard( self ):
@@ -38,6 +49,10 @@ def MakePlots_standard( self ):
     c.Divide( n_columns, n_rows )
 
 
+    # Should really be True except in exceptional plots
+    drawFit = True
+    if hasattr( self, 'disableDrawFits' ) and self.disableDrawFits: drawFit = False
+
 
     for histvar in self.histvars:
 
@@ -52,17 +67,25 @@ def MakePlots_standard( self ):
             ROOT.gPad.SetTopMargin(0.1)
 
             H = self.Fit[histvarname]['fitdata'][i_bin]
+
+            if not drawFit:
+                H = H.Rebin(10)
+
             H.Draw()
 
+            histvartitle = 'E_{{{0}}}/E_{{true}}'.format( histvar.GetTitle() )
+            # Default is to assume it's an energy ratio, if not change the plotting label a bit
+            if hasattr( self, 'notAnEnergyRatio' ) and self.notAnEnergyRatio:
+                histvartitle = histvar.GetTitle()
 
-            H.SetTitle( 'E_{{{0}}}/E_{{true}} ( {2} < {1} < {3} )'.format(
-                histvar.GetTitle(),
+            H.SetTitle( '{0} ( {2} < {1} < {3} )'.format(
+                histvartitle,
                 self.slicevarname,
                 self.bounds[i_bin], self.bounds[i_bin+1]
                 ))
             H.SetTitleSize(0.06);
 
-            H.GetXaxis().SetTitle( 'E_{{{0}}}/E_{{true}}'.format( histvar.GetTitle() ))
+            H.GetXaxis().SetTitle( histvartitle )
             H.GetXaxis().SetRangeUser( 0., 1.3 );
 
             H.GetXaxis().SetLabelSize(0.05);
@@ -71,38 +94,40 @@ def MakePlots_standard( self ):
             H.GetYaxis().SetTitleSize(0.06);
 
 
-            H_CB = self.Fit[histvarname]['CBhist'][i_bin]
-            H_CB.Scale( H.Integral() / H_CB.Integral() * H_CB.GetNbinsX() / H.GetNbinsX() )
-            H_CB.SetLineColor(2)
-            H_CB.Draw('HISTSAMEL')
+            if drawFit:
+                H_CB = self.Fit[histvarname]['CBhist'][i_bin]
+                H_CB.Scale( H.Integral() / H_CB.Integral() * H_CB.GetNbinsX() / H.GetNbinsX() )
+                H_CB.SetLineColor(2)
+                H_CB.Draw('HISTSAMEL')
 
 
-            # ======================================
-            # Labels
+                # ======================================
+                # Labels
 
-            lx = 0.24
-            ly = 0.88
-            nl = 0.07
-            nc = 0.1
+                lx = 0.24
+                ly = 0.88
+                nl = 0.07
+                nc = 0.1
 
-            l = ROOT.TLatex()
-            l.SetTextAlign(13)
-            l.SetNDC()
-            l.SetTextSize(0.05)
+                l = ROOT.TLatex()
+                l.SetTextAlign(13)
+                l.SetNDC()
+                l.SetTextSize(0.05)
 
-            l.DrawLatex( lx, ly, 'CB parameters' )
-            ly -= nl+0.02
+                l.DrawLatex( lx, ly, 'CB parameters' )
+                ly -= nl+0.02
 
-            parvalues = self.Fit[histvarname]['CBvals'][i_bin]
-            partitles = [ '#alpha_{1}', 'n_{1}', '#mu', '#sigma', '#alpha_{2}', 'n_{2}' ]
+                parvalues = self.Fit[histvarname]['CBvals'][i_bin]
+                partitles = [ '#alpha_{1}', 'n_{1}', '#mu', '#sigma', '#alpha_{2}', 'n_{2}' ]
 
-            for parvalue, partitle in zip( parvalues, partitles ):
-                l.DrawLatex( lx,     ly, partitle )
-                l.DrawLatex( lx+nc, ly, '{0:.4f}'.format(parvalue) )
-                ly -= nl
-            ly -= 0.015
-            l.DrawLatex( lx,    ly, '#sigma_{eff}' )
-            l.DrawLatex( lx+nc, ly, '{0:.4f}'.format( self.Fit[histvarname]['effsigma'][i_bin] ) )
+                for parvalue, partitle in zip( parvalues, partitles ):
+                    l.DrawLatex( lx,     ly, partitle )
+                    l.DrawLatex( lx+nc, ly, '{0:.4f}'.format(parvalue) )
+                    ly -= nl
+                ly -= 0.015
+                l.DrawLatex( lx,    ly, '#sigma_{eff}' )
+                l.DrawLatex( lx+nc, ly, '{0:.4f}'.format( self.Fit[histvarname]['effsigma'][i_bin] ) )
+
 
         self.Save( c, 'PerBinFit' + histvarname.capitalize() )
 
@@ -128,7 +153,18 @@ def MakePlots_standard( self ):
     base.SetMinimum(self.sliceplot_y_min)
     base.SetMaximum(self.sliceplot_y_max)
 
-    base.GetXaxis().SetTitle( self.slicevarname )
+
+
+
+    if self.slicevarname in xAxisLabelDict:
+        base.GetXaxis().SetTitle( xAxisLabelDict[self.slicevarname] )
+    elif hasattr( self, 'slicevartitle' ):
+        base.GetXaxis().SetTitle( self.slicevartitle )
+    else:
+        # This here so it's still possible to plot old fits
+        base.GetXaxis().SetTitle( self.slicevarname )
+
+
     base.GetXaxis().SetNdivisions(505)
     base.GetYaxis().SetTitleOffset(1.1)
     base.GetXaxis().SetLabelSize(0.05)
@@ -229,6 +265,16 @@ def MakePlots_standard( self ):
         Hsigmas_filled.append( Hsigma_filled )
 
         leg_sigma.AddEntry( 'sigma_' + histvar.GetName(), '#sigma_{CB, ' + histvar.GetTitle() + '}', 'lf' )
+
+
+    # leg_sigma.SetBorderSize(0)
+    # square = ROOT.TBox( self.sliceplot_LeftMargin,      1.0-self.sliceplot_TopMargin - 0.25,
+    #     1.0-self.sliceplot_RightMargin, 1.0-self.sliceplot_TopMargin+self.sliceplot_legheight  )
+    # # square.SetFillStyle(1)
+    # # square.SetLineColor(1)
+    # # square.SetLineStyle(1)
+    # # square.SetLineWidth(1)
+    # square.Draw('SAME')
 
     leg_sigma.Draw('SAME')
     self.Save( c, 'EffSigmaOverBins' )

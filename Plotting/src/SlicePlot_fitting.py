@@ -59,7 +59,7 @@ def FitSlices( self ):
 
 
 
-def FitOneSlice( self, hdata_reduced, histvar ):
+def FitOneSlice( self, hdata_reduced, histvar, unbinnedFit=False ):
 
     # Reduce dataset to one column, only for fitting
     hdata_fit = hdata_reduced.reduce( ROOT.RooArgSet(histvar) )
@@ -85,18 +85,33 @@ def FitOneSlice( self, hdata_reduced, histvar ):
     self.p( 'Number of entries in fit dataset: ' + str(hdata_fit.numEntries()), 4 )
     
 
-    pdfCB.fitTo(
-        hdata_fit,
-        ROOT.RooFit.Range(self.fit_x_min, self.fit_x_max),
-        ROOT.RooFit.PrintEvalErrors(-1), ROOT.RooFit.PrintLevel(-1)
-        )
+    if unbinnedFit:
+        pdfCB.fitTo(
+            hdata_fit,
+            ROOT.RooFit.Range(self.fit_x_min, self.fit_x_max),
+            ROOT.RooFit.PrintEvalErrors(-1), ROOT.RooFit.PrintLevel(-1)
+            )
+    else:
+        nBinning = 1000
+
+        hdatahist_fit = ROOT.RooDataHist(
+            RootName(), RootName(),
+            ROOT.RooArgSet( histvar ),
+            hdata_fit
+            )
+
+        pdfCB.fitTo(
+            hdatahist_fit,
+            ROOT.RooFit.Range(self.fit_x_min, self.fit_x_max),
+            ROOT.RooFit.PrintEvalErrors(-1), ROOT.RooFit.PrintLevel(-1)
+            )
 
     # Make a histogram out of the CB function so that effSigma can be calculated
-    histCB = pdfCB.createHistogram( RootName(), histvar, ROOT.RooFit.Binning(1000) )
+    histCB = pdfCB.createHistogram( RootName(), histvar, ROOT.RooFit.Binning(2000) )
     effsigma = ROOT.effSigma( histCB )
 
     # Make a histogram of the reduced dataset for easy plotting later
-    fitdata = super(hdata_fit.__class__, hdata_fit).createHistogram( RootName(), histvar, ROOT.RooFit.Binning(200) )
+    fitdata = super(hdata_fit.__class__, hdata_fit).createHistogram( RootName(), histvar, ROOT.RooFit.Binning(400) )
     self.p( 'Number of entries in fit histogram: ' + str(fitdata.GetEntries()), 4 )
     self.p( 'Mean of fit histogram: ' + str(fitdata.GetMean()), 5 )
 

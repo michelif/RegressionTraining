@@ -174,30 +174,38 @@ def Fit():
     meantgt    = LWS.meantgt
 
 
-    scRawEnergy       = ROOT.RooRealVar( "scRawEnergy", "scRawEnergy", 0.)
-    scPreshowerEnergy = ROOT.RooRealVar( "scPreshowerEnergy", "scPreshowerEnergy", 0.)
-    r9                = ROOT.RooRealVar( "r9", "r9", 0.)
-    nVtx              = ROOT.RooRealVar( "nVtx", "nVtx", 0.)
-    pt                = ROOT.RooRealVar( "pt", "pt", 0.)
-    genEta            = ROOT.RooRealVar( "genEta", "genEta", 0.)
-    genE              = ROOT.RooRealVar( "genEnergy", "genEnergy", 0.)
-    genPt             = ROOT.RooRealVar( "genPt", "genPt", 0.)
+    scRawEnergy       = ROOT.RooRealVar( "scRawEnergy",          "scRawEnergy", 0.)
+    scPreshowerEnergy = ROOT.RooRealVar( "scPreshowerEnergy",    "scPreshowerEnergy", 0.)
+    r9                = ROOT.RooRealVar( "r9",                   "r9", 0.)
+    nVtx              = ROOT.RooRealVar( "nVtx",                 "nVtx", 0.)
+    pt                = ROOT.RooRealVar( "pt",                   "pt", 0.)
 
-    cor74E            = ROOT.RooRealVar( "corrEnergy74X",      "corrEnergy74X", 0. )
-    cor74Eerror       = ROOT.RooRealVar( "corrEnergy74XError", "corrEnergy74XError", 0. )
+
+    genEta            = ROOT.RooRealVar( "genEta",               "genEta", 0. )
+    genE              = ROOT.RooRealVar( "genEnergy",            "genEnergy", 0. )
+    genPt             = ROOT.RooRealVar( "genPt",                "genPt", 0. )
+    
+    cor74E            = ROOT.RooRealVar( "corrEnergy74X",        "corrEnergy74X", 0. )
+    cor74Eerror       = ROOT.RooRealVar( "corrEnergy74XError",   "corrEnergy74XError", 0. )
 
     # Only add to ArgList if TRK variables were included in the training
-    trkMom            = ROOT.RooRealVar( "trkMomentum", "trkMomentum", 0.)
-    trkMomE           = ROOT.RooRealVar( "trkMomentumError", "trkMomentumError", 0.)
-    trkEta            = ROOT.RooRealVar( "trkEta", "trkEta", 0.)
-    trkPhi            = ROOT.RooRealVar( "trkPhi", "trkPhi", 0.)
-    fbrem             = ROOT.RooRealVar( "fbrem", "fbrem", 0.)
-    ECALweight        = ROOT.RooRealVar( "ECALweight", "ECALweight", 0. )
-    TRKweight         = ROOT.RooRealVar( "TRKweight",  "TRKweight", 0. )
+    trkMom            = ROOT.RooRealVar( "trkMomentum",          "trkMomentum", 0.)
+    trkMomE           = ROOT.RooRealVar( "trkMomentumError",     "trkMomentumError", 0.)
+    trkEta            = ROOT.RooRealVar( "trkEta",               "trkEta", 0.)
+    trkPhi            = ROOT.RooRealVar( "trkPhi",               "trkPhi", 0.)
+    fbrem             = ROOT.RooRealVar( "fbrem",                "fbrem", 0.)
+    ECALweight        = ROOT.RooRealVar( "ECALweight",           "ECALweight", 0. )
+    TRKweight         = ROOT.RooRealVar( "TRKweight",            "TRKweight", 0. )
 
     # These variables are only available for second-regression mode
-    response          = ROOT.RooRealVar( "response", "response", 0.)
-    resolution        = ROOT.RooRealVar( "resolution", "resolution", 0.)
+    response          = ROOT.RooRealVar( "response",             "response", 0.)
+    resolution        = ROOT.RooRealVar( "resolution",           "resolution", 0.)
+
+    full5x5_r9        = ROOT.RooRealVar( "full5x5_r9",           "full5x5_r9", 0. )
+
+
+    trkMomentum         = ROOT.RooRealVar( "trkMomentum",         "trkMomentum", 0. )
+    trkMomentumRelError = ROOT.RooRealVar( "trkMomentumRelError", "trkMomentumRelError", 0. )
 
 
     # ======================================
@@ -258,8 +266,14 @@ def Fit():
             response,
             resolution,
 
+            # Used to compute the 74X Ep combination result
             pt,
             trkEta,
+
+            full5x5_r9,
+
+            trkMomentum,
+            trkMomentumRelError,
             ]
 
 
@@ -286,67 +300,116 @@ def Fit():
     #       There is no error message, but the results are interpreted totally different without the brackets!
     #       Or it is the RooArgLists that can't be passed in the defition of the RooFormula directly
 
+    nBinningHistVars = 2000
+
     rawArgList = ROOT.RooArgList( scRawEnergy, scPreshowerEnergy, genE )
     rawformula = ROOT.RooFormulaVar( 'rawformula', 'raw', '((@0+@1)/@2)', rawArgList )
     rawvar = hdata.addColumn(rawformula)
     rawvar.setRange( 0., 2. )
-    rawvar.setBins(800)
+    rawvar.setBins(nBinningHistVars)
 
     ecor74ArgList = ROOT.RooArgList( cor74E, genE )
-    ecor74formula = ROOT.RooFormulaVar( 'ecor74formula', 'corr. (74X)', '(@0/@1)', ecor74ArgList )
+    ecor74formula = ROOT.RooFormulaVar( 'ecor74formula', 'corr. (ECAL 74X)', '(@0/@1)', ecor74ArgList )
     ecor74var = hdata.addColumn(ecor74formula)
     ecor74var.setRange( 0., 2. )
-    ecor74var.setBins(800)
+    ecor74var.setBins(nBinningHistVars)
 
 
     if not args.second_regression:
         # ecor uses target
         ecorArgList = ROOT.RooArgList( sigmeanlim, tgtvar )
         ecorformula = ROOT.RooFormulaVar(
-            'ecorformula', 'corr.',
+            'ecorformula', 'corr. (ECAL)',
             '(@0/@1)',
             ecorArgList
             )
 
         ecorvar = hdata.addColumn(ecorformula)
         ecorvar.setRange( 0., 2. )
-        ecorvar.setBins(800)
+        ecorvar.setBins(nBinningHistVars)
 
     elif args.second_regression:
         # distinguish between corrected ECAL and corrected 2step
         
         ecalCorrArgList = ROOT.RooArgList( response, scRawEnergy, scPreshowerEnergy, genE )
         ecalCorrFormula = ROOT.RooFormulaVar(
-            'ecalCorrFormula', 'corr. ECAL',
+            'ecalCorrFormula', 'corr. (ECAL)',
             '(response * ((scRawEnergy+scPreshowerEnergy)/genEnergy))',
             ecalCorrArgList
             )
         ecalCorrVar = hdata.addColumn(ecalCorrFormula)
         ecalCorrVar.setRange( 0., 2. )
-        ecalCorrVar.setBins(800)
+        ecalCorrVar.setBins(nBinningHistVars)
 
         trkCorrArgList = ROOT.RooArgList( sigmeanlim, tgtvar )
         trkCorrFormula = ROOT.RooFormulaVar(
-            'trkCorrFormula', 'corr. ECAL+TRK',
+            'trkCorrFormula', 'E/p comb.',
             '(@0/@1)',
             trkCorrArgList
             )
 
         trkCorrVar = hdata.addColumn(trkCorrFormula)
         trkCorrVar.setRange( 0., 2. )
-        trkCorrVar.setBins(800)
+        trkCorrVar.setBins(nBinningHistVars)
 
         Ep74CorrArgList = ROOT.RooArgList( pt, trkEta, genE )
         Ep74CorrFormula = ROOT.RooFormulaVar(
-            'Ep74CorrFormula', 'Ep Comb. (74X)',
+            'Ep74CorrFormula', 'E/p comb. (74X)',
             '((@0*TMath::CosH(@1))/@2)',
             Ep74CorrArgList
             )
 
         Ep74CorrVar = hdata.addColumn(Ep74CorrFormula)
         Ep74CorrVar.setRange( 0., 2. )
-        Ep74CorrVar.setBins(800)
+        Ep74CorrVar.setBins(nBinningHistVars)
 
+
+        trkWeightArgList = ROOT.RooArgList(
+            scRawEnergy, scPreshowerEnergy, resolution,
+            trkMomentum, trkMomentumRelError
+            )
+        trkWeightStr = (
+            '(' +
+            '  ((scRawEnergy+scPreshowerEnergy)*(scRawEnergy+scPreshowerEnergy)*resolution*resolution)' +
+            '    /  ' +
+            '  ( trkMomentum*trkMomentum*trkMomentumRelError*trkMomentumRelError' +
+            '    + (scRawEnergy+scPreshowerEnergy)*(scRawEnergy+scPreshowerEnergy)*resolution*resolution )' +
+            ')'
+            )
+        trkWeightStr = trkWeightStr.replace(' ','')
+        trkWeightFormula = ROOT.RooFormulaVar(
+            'trkWeight', 'trkWeight',
+            trkWeightStr,
+            trkWeightArgList
+            )
+
+        trkWeightVar = hdata.addColumn(trkWeightFormula)
+        trkWeightVar.setRange( 0., 2. )
+        trkWeightVar.setBins(100)
+
+
+        ecalWeightArgList = ROOT.RooArgList(
+            scRawEnergy, scPreshowerEnergy, resolution,
+            trkMomentum, trkMomentumRelError
+            )
+        ecalWeightStr = (
+            '(' +
+            '  (trkMomentum*trkMomentum*trkMomentumRelError*trkMomentumRelError)' +
+            '    /  ' +
+            '  ( trkMomentum*trkMomentum*trkMomentumRelError*trkMomentumRelError' +
+            '    + (scRawEnergy+scPreshowerEnergy)*(scRawEnergy+scPreshowerEnergy)*resolution*resolution )' +
+            ')'
+            )
+        ecalWeightStr = ecalWeightStr.replace(' ','')
+        ecalWeightFormula = ROOT.RooFormulaVar(
+            'ecalWeight', 'ecalWeight',
+            ecalWeightStr,
+            ecalWeightArgList
+            )
+
+        ecalWeightVar = hdata.addColumn(ecalWeightFormula)
+        ecalWeightVar.setRange( 0., 2. )
+        ecalWeightVar.setBins(100)
 
 
 
@@ -374,9 +437,10 @@ def Fit():
         0.,    5.,    10.,   15.,   20.,   25.,  30.,   40.,   50., 60.,   80.,   100.,
         150.,  200.,  250.,  300.,  400.,  500.,
         750.,  1000., 1250., 1500., 2000., 2500.,
-        3000., 3500., 4000., 5000., 6500.
+        # 3000., 3500., 4000., 5000., 6500.
         ]
 
+    allPt_bounds += [ 2500 + 100*i for i in xrange(1,50) ]
 
     for i_globalPtBin in xrange(len(globalPt_bounds)-1):
 
@@ -403,6 +467,35 @@ def Fit():
                 ]
 
 
+
+        # ======================================
+        # Weight plots
+
+        # # Get the finer genPt bounds inside this global bin
+        # localPt_bounds = allPt_bounds[ allPt_bounds.index(min_globalPt) : allPt_bounds.index(max_globalPt) + 1 ]
+
+
+        # TRKW_name = 'TRKW-{0:04d}-{1:04d}'.format( int(min_globalPt), int(max_globalPt) )
+        # TRKW_sliceplot = SlicePlot(
+        #     name     = TRKW_name,
+        #     longname = particle + region + ecaltrkstr + '_' + TRKW_name,
+        #     plotdir  = plotdir
+        #     )
+        # TRKW_sliceplot.SetDataset( hdata_globalPtBin )
+        # TRKW_sliceplot.SetHistVars( [ trkWeightVar, ecalWeightVar ] )
+        # TRKW_sliceplot.SetSliceVar(
+        #     genPt,
+        #     localPt_bounds,
+        #     'p_{t, gen}'
+        #     )
+        # # Specify that it's not an energy ratio (for plotting purposes only)
+        # setattr( TRKW_sliceplot, 'notAnEnergyRatio', True )
+        # setattr( TRKW_sliceplot, 'disableDrawFits', True )
+        # TRKW_sliceplot.FitSlices()
+
+        # continue
+
+
         # ======================================
         # genPt plot
 
@@ -417,44 +510,73 @@ def Fit():
             plotdir  = plotdir
             )
         genPt_sliceplot.SetDataset( hdata_globalPtBin )
-        genPt_sliceplot.SetHistVars(histogramVariables)
+        genPt_sliceplot.SetHistVars( histogramVariables )
         genPt_sliceplot.SetSliceVar(
             genPt,
             localPt_bounds,
+            'p_{t, gen}'
             )
         genPt_sliceplot.FitSlices()
 
 
-        # # ======================================
-        # # genEta plot
+        continue
 
-        # if dobarrel:
-        #     genEta_bounds = [ 
-        #         0.0, 0.2, 0.4, 0.6, 0.8,
-        #         1.0, 1.2, 1.5,
-        #         ]
-        # else:
-        #     genEta_bounds = [ 
-        #         1.5, 1.7, 1.9, 2.1, 2.3, 3.0
-        #         ]
+        # ======================================
+        # genEta plot
 
-        # genEta_name = 'GENETA-{0:04d}-{1:04d}'.format( int(min_globalPt), int(max_globalPt) )
-        # genEta_sliceplot = SlicePlot(
-        #     name     = genEta_name,
-        #     longname = particle + region + ecaltrkstr + '_' + genEta_name,
-        #     plotdir  = plotdir
-        #     )
-        # genEta_sliceplot.SetDataset( hdata_globalPtBin )
-        # genEta_sliceplot.SetHistVars([
-        #     rawvar,
-        #     ecor74var,
-        #     ecorvar,
-        #     ])
-        # genEta_sliceplot.SetSliceVar(
-        #     genEta,
-        #     genEta_bounds,
-        #     )
-        # genEta_sliceplot.FitSlices()
+        if dobarrel:
+            genEta_bounds = [ 
+                0.0, 0.2, 0.4, 0.6, 0.8,
+                1.0, 1.2, 1.5,
+                ]
+        else:
+            genEta_bounds = [ 
+                1.5, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.6
+                ]
+
+        genEta_name = 'GENETA-{0:04d}-{1:04d}'.format( int(min_globalPt), int(max_globalPt) )
+        genEta_sliceplot = SlicePlot(
+            name     = genEta_name,
+            longname = particle + region + ecaltrkstr + '_' + genEta_name,
+            plotdir  = plotdir
+            )
+        genEta_sliceplot.SetDataset( hdata_globalPtBin )
+        genEta_sliceplot.SetHistVars(histogramVariables)
+        genEta_sliceplot.SetSliceVar(
+            genEta,
+            genEta_bounds,
+            '#eta_{gen}'
+            )
+        genEta_sliceplot.FitSlices()
+
+
+
+        # ======================================
+        # r9 plot
+
+        if args.second_regression:
+            r9Var = full5x5_r9
+        else:
+            r9Var = r9
+
+        r9_bounds = [ 
+            0.5, 0.8, 0.85, 0.9, 0.92, 0.94, 0.95, 0.96, 0.97, 1.0
+            ]
+
+        r9_name = 'R9-{0:04d}-{1:04d}'.format( int(min_globalPt), int(max_globalPt) )
+        r9_sliceplot = SlicePlot(
+            name     = r9_name,
+            longname = particle + region + ecaltrkstr + '_' + r9_name,
+            plotdir  = plotdir
+            )
+        r9_sliceplot.SetDataset( hdata_globalPtBin )
+        r9_sliceplot.SetHistVars(histogramVariables)
+        r9_sliceplot.SetSliceVar(
+            r9Var,
+            r9_bounds,
+            'r9'
+            )
+        r9_sliceplot.FitSlices()
 
 
 

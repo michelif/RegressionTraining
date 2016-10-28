@@ -35,8 +35,18 @@ class SlicePlot:
         self.pickledir = 'FitPickles'
 
 
-        self.sliceplot_y_min = 0.95
-        self.sliceplot_y_max = 1.03
+        self.fit_x_min = 0.8
+        self.fit_x_max = 1.1
+
+        self.Verbosity = 10
+
+        self.SetPlotSpecifics()
+
+
+    def SetPlotSpecifics( self ):
+
+        self.sliceplot_y_min = 0.99
+        self.sliceplot_y_max = 1.01
 
         self.sliceplotsigma_y_min   = 0.0
         self.sliceplotsigma_y_max   = 0.1
@@ -55,11 +65,6 @@ class SlicePlot:
         self.perbin_cwidth          = 1000
         self.perbin_cheight         = 1000
 
-        self.fit_x_min = 0.8
-        self.fit_x_max = 1.1
-
-        self.Verbosity = 10
-
         self.colorlist = [ 2, 3, 4, 6, 8, 9, 30, 40, 41, 43, 46 ]
 
 
@@ -69,9 +74,15 @@ class SlicePlot:
     def SetHistVars( self, histvars ):
         self.histvars = histvars
 
-    def SetSliceVar( self, slicevar, bounds ):
+    def SetSliceVar( self, slicevar, bounds, slicevartitle=None ):
         self.slicevar = slicevar
         self.slicevarname = slicevar.GetName()
+
+        if not slicevartitle:
+            self.slicevartitle = slicevarname
+        else:
+            self.slicevartitle = slicevartitle
+        
         self.bounds = bounds
         self.n_bins = len(bounds) - 1
         if self.name == 'TODO':
