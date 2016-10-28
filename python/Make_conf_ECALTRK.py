@@ -12,12 +12,34 @@ import ROOT
 from Config import Config
 from time import strftime
 
+import argparse
+
 
 ########################################
 # Main
 ########################################
 
 def Make_conf(Verbose=True):
+
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument( '--inputrootfile', '-i', type=str, help='Path to root file',
+        default='/afs/cern.ch/work/t/tklijnsm/public/CMSSW_8_0_4/src/NTuples/Ntup_Jul22_fullpt_training.root'
+        )
+    parser.add_argument(
+        '--particle', metavar='N', type=str, nargs='+', help='Specify particles',
+        default=['electron','photon'],choices=['electron','photon']
+        )
+    parser.add_argument(
+        '--region', metavar='N', type=str, nargs='+', help='Specify regions',
+        default=['EB','EE'],choices=['EE','EB']
+        )
+    parser.add_argument(
+        '-n', '--name', type=str, default='NONE', help='Append a string at the end of the name of this config'
+        )
+    parser.add_argument( '--fast', action='store_true', help='Change some BDT options to be faster (but maybe less precise)')
+    args = parser.parse_args()
+
 
     # root_file = 'Ntup_Jul15_fullpt_training.root'
 
@@ -50,9 +72,11 @@ def Make_conf(Verbose=True):
 
     return_configs = []
 
-    for region in [ 'EB', 'EE' ]:
+    # for region in [ 'EB', 'EE' ]:
+    for region in args.region:
         for ECAL_AND_TRK in [ False, True ]:
-            for particle in [ 'electron', 'photon' ]:
+            # for particle in [ 'electron', 'photon' ]:
+            for particle in args.particle:
                 if ECAL_AND_TRK and particle=='photon': continue # Photon doesn't have TRK vars
 
                 # Instantiate the Config class which prints a .config file
@@ -60,10 +84,13 @@ def Make_conf(Verbose=True):
 
                 config.Name       = 'Config_' + datestr + '_' + particle + '_' + region
 
+
                 if ECAL_AND_TRK:
                     config.Name += '_ECALTRK'
                 else:
                     config.Name += '_ECALonly'
+
+                if args.name: config.Name += '_' + args.name
 
 
                 config.InputFiles = physical_path( root_file )
@@ -74,14 +101,20 @@ def Make_conf(Verbose=True):
                 # BDT settings
                 ########################################
 
+                # config.Options = [
+                #     "MinEvents=200",
+                #     "Shrinkage=0.1",
+                #     "NTrees=1000",
+                #     "MinSignificance=5.0",
+                #     "EventWeight=1",
+                #     ]
+
                 config.Options = [
-                    "MinEvents=200",
-                    "Shrinkage=0.1",
-                    # "NTrees=2000", # <-- Moved up from 1000 to include extra tracker effects
+                    "MinEvents=300",
+                    "Shrinkage=0.15",
                     "NTrees=1000",
                     "MinSignificance=5.0",
-                    # "EventWeight=max( min(1,exp(-(genPt-50)/50)), 0.1 )", # <-- What to do?
-                    "EventWeight=1", # <-- No one really likes the weights
+                    "EventWeight=1",
                     ]
 
                 # Set the target - be careful to include the tracker energy in the target for the Ep combination
@@ -106,18 +139,23 @@ def Make_conf(Verbose=True):
                 # ======================================
                 # Sample division - need a part for the ECAL-only training, and a part for the combination
 
-                # 80% for the main BDT - divide the sample in divideNumber pieces, and use all but one piece for the main BDT
-                divideNumber            = 3
-                config.CutBase          = "eventNumber%{0}!=0".format( divideNumber )
+                if particle == 'electron':
+                    # 66% for the main BDT - divide the sample in divideNumber pieces, and use all but one piece for the main BDT
+                    divideNumber            = 3
+                    config.CutBase          = "eventNumber%{0}!=0".format( divideNumber )
 
-                # 10% for combination, 10% for error
-                config.CutComb          = "eventNumber%{0}==0 && eventNumber%{1}==0".format( divideNumber, 2*divideNumber )
-                config.CutError         = "eventNumber%{0}==0 && eventNumber%{1}!=0".format( divideNumber, 2*divideNumber )
+                    # 17% for combination, 17% for error
+                    config.CutComb          = "eventNumber%{0}==0 && eventNumber%{1}==0".format( divideNumber, 2*divideNumber )
+                    config.CutError         = "eventNumber%{0}==0 && eventNumber%{1}!=0".format( divideNumber, 2*divideNumber )
+                elif particle == 'photon':
+                    config.CutBase          = '1.0'
+                    config.CutComb          = '1.0'
+                    config.CutError         = '1.0'
 
                 # # TEMPORARY: cut events drastically for test mode
-                config.CutBase  += " && NtupID<5000"
-                config.CutComb  += " && NtupID<5000"
-                config.CutError += " && NtupID<5000"
+                config.CutBase  += " && NtupID<3000"
+                config.CutComb  += " && NtupID<3000"
+                config.CutError += " && NtupID<3000"
 
 
                 ########################################
