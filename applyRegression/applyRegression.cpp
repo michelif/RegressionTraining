@@ -5,6 +5,10 @@
 #include "TTreeFormula.h"
 #include "ParReader.h"
 
+// Needed for randomly assigned weight
+#include "TRandom.h"
+#include "TF1.h"
+
 #include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
@@ -24,6 +28,9 @@ using namespace boost::filesystem;
 #define debug false
 #define testing false
 
+#define saveTRKvarse true
+
+
 bool replace(std::string& str, const std::string& from, const std::string& to) {
   size_t start_pos = str.find(from);
   if(start_pos == std::string::npos)
@@ -38,11 +45,18 @@ bool replace(std::string& str, const std::string& from, const std::string& to) {
 
 int main(int argc, char** argv) {
   
-  double responseScale = 0.5*(2.-0.2);
-  double responseOffset = 0.2 + 0.5*(2.-0.2);
+  double responseMin = -1.0 ;
+  double responseMax = 3.0 ;
+  double resolutionMin = 0.0002 ;
+  double resolutionMax = 0.5 ;
 
-  double resolutionScale = 0.5*(0.5-0.0002);
-  double resolutionOffset = 0.0002 + 0.5*(0.5-0.0002);
+
+  double responseScale = 0.5*( responseMax - responseMin );
+  double responseOffset = responseMin + 0.5*( responseMax - responseMin );
+
+  double resolutionScale = 0.5*( resolutionMax - resolutionMin );
+  double resolutionOffset = resolutionMin + 0.5*( resolutionMax - resolutionMin );
+
 
   string parameterFile;
   string testingFileName;
@@ -186,9 +200,110 @@ int main(int argc, char** argv) {
     TFile* outputFile = TFile::Open(outputFileName.c_str(), "RECREATE");
     outputFile->mkdir("een_analyzer");
     outputFile->cd("een_analyzer");
+
     TTree *friendtree = new TTree("correction", "correction");
     friendtree->Branch("response", &response, "response/F");
     friendtree->Branch("resolution", &resolution, "resolution/F");
+
+
+    // ------------------------
+    // All the TRK vars, so merging is not necessary
+
+    int scIsEB;
+    float genEnergy;
+    float scRawEnergy;
+    float scPreshowerEnergy;
+    float trkMomentumRelError;
+    float trkMomentum;
+    float eleEcalDriven;
+    float full5x5_r9;
+    float fbrem;
+    float gsfchi2;
+    float gsfndof;
+    float trkEta;
+    float trkPhi;
+
+    float genPt;
+    float genEta;
+    int   NtupID;
+    int   eventNumber;
+
+    float pt;
+    float scEta;
+    float corrEnergy74X;
+    float corrEnergy74XError;
+
+
+    testingTree->SetBranchAddress( "scIsEB", &scIsEB );
+    testingTree->SetBranchAddress( "genEnergy", &genEnergy );
+    testingTree->SetBranchAddress( "scRawEnergy", &scRawEnergy );
+    testingTree->SetBranchAddress( "scPreshowerEnergy", &scPreshowerEnergy );
+    testingTree->SetBranchAddress( "trkMomentumRelError", &trkMomentumRelError );
+    testingTree->SetBranchAddress( "trkMomentum", &trkMomentum );
+    testingTree->SetBranchAddress( "eleEcalDriven", &eleEcalDriven );
+    testingTree->SetBranchAddress( "full5x5_r9", &full5x5_r9 );
+    testingTree->SetBranchAddress( "fbrem", &fbrem );
+    testingTree->SetBranchAddress( "gsfchi2", &gsfchi2 );
+    testingTree->SetBranchAddress( "gsfndof", &gsfndof );
+    testingTree->SetBranchAddress( "trkEta", &trkEta );
+    testingTree->SetBranchAddress( "trkPhi", &trkPhi );
+
+    testingTree->SetBranchAddress( "genPt", &genPt );
+    testingTree->SetBranchAddress( "genEta", &genEta );
+    testingTree->SetBranchAddress( "NtupID", &NtupID );
+    testingTree->SetBranchAddress( "eventNumber", &eventNumber );
+
+    testingTree->SetBranchAddress( "pt", &pt );
+    testingTree->SetBranchAddress( "scEta", &scEta );
+    testingTree->SetBranchAddress( "corrEnergy74X", &corrEnergy74X );
+    testingTree->SetBranchAddress( "corrEnergy74XError", &corrEnergy74XError );
+
+    if (saveTRKvarse) {
+        friendtree->Branch("scIsEB", &scIsEB, "scIsEB/I" );
+        friendtree->Branch("genEnergy", &genEnergy, "genEnergy/F" );
+        friendtree->Branch("scRawEnergy", &scRawEnergy, "scRawEnergy/F" );
+        friendtree->Branch("scPreshowerEnergy", &scPreshowerEnergy, "scPreshowerEnergy/F" );
+        friendtree->Branch("trkMomentumRelError", &trkMomentumRelError, "trkMomentumRelError/F" );
+        friendtree->Branch("trkMomentum", &trkMomentum, "trkMomentum/F" );
+        friendtree->Branch("eleEcalDriven", &eleEcalDriven, "eleEcalDriven/F" );
+        friendtree->Branch("full5x5_r9", &full5x5_r9, "full5x5_r9/F" );
+        friendtree->Branch("fbrem", &fbrem, "fbrem/F" );
+        friendtree->Branch("gsfchi2", &gsfchi2, "gsfchi2/F" );
+        friendtree->Branch("gsfndof", &gsfndof, "gsfndof/F" );
+        friendtree->Branch("trkEta", &trkEta, "trkEta/F" );
+        friendtree->Branch("trkPhi", &trkPhi, "trkPhi/F" );
+
+        friendtree->Branch("genPt", &genPt, "genPt/F" );
+        friendtree->Branch("genEta", &genEta, "genEta/F" );
+        friendtree->Branch("NtupID", &NtupID, "NtupID/I" );
+        friendtree->Branch("eventNumber", &eventNumber, "eventNumber/I" );
+
+        friendtree->Branch("pt", &pt, "pt/F" );
+        friendtree->Branch("scEta", &scEta, "scEta/F" );
+        friendtree->Branch("corrEnergy74X", &corrEnergy74X, "corrEnergy74X/F" );
+        friendtree->Branch("corrEnergy74XError", &corrEnergy74XError, "corrEnergy74XError/F" );
+    }
+    // ------------------------
+
+
+
+    // #########################################
+    // This part adds on a weight variable which can be cut on
+
+    bool usePtWeightCut = true;
+
+    TRandom randomNumber;
+
+    TF1 *ptWeightFunction = new TF1( "weightFunction", "TMath::Max( TMath::Min( 1.0 ,TMath::Exp(-(x-50)/50) ), 0.01 )", 0., 6500. );
+
+    int ptWeightCut;
+    if(usePtWeightCut){
+        friendtree->Branch("ptWeightCut", &ptWeightCut, "ptWeightCut/I" );
+        }
+
+    // #########################################
+
+
 
 
     for (Long64_t iev=0; iev<testingTree->GetEntries(); ++iev) {
@@ -199,7 +314,11 @@ int main(int argc, char** argv) {
       testingTree->LoadTree(iev);
       bool isEB = formIsEB.EvalInstance();
       bool isEE = formIsEE.EvalInstance();
-      
+
+      // NtupID->GetBranch()->GetEntry(iev);
+      // NtupIDVal = NtupID->GetValue();
+      // if (NtupIDVal < 5000) continue;
+
       if (isEB) {
 	for (int i=0; i<nvarsEB; ++i) {
 	  valsEB[i] = inputformsEB[i]->EvalInstance();
@@ -240,6 +359,12 @@ int main(int argc, char** argv) {
       if (debug) cout << "true response " << genE.EvalInstance()/rawE.EvalInstance() << endl;
       if (testing) response = genE.EvalInstance()/rawE.EvalInstance();
 		   
+      testingTree->GetEntry(iev);
+
+
+      if (usePtWeightCut) ptWeightCut = ( ptWeightFunction->Eval(genPt) > randomNumber.Rndm() ) ? 1 : 0 ;
+
+
       friendtree->Fill();
       
     }
