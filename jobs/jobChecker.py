@@ -16,6 +16,17 @@ import sys
 from glob import glob
 
 
+if 'lxplus' in os.environ['HOSTNAME']:
+    onLxplus = True
+    onPsi = False
+elif 't3' in os.environ['HOSTNAME']:
+    onLxplus = False
+    onPsi = True
+else:
+    print 'Could not determine platform, guessing lxplus'
+    onLxplus = True
+    onPsi = False
+
 
 ########################################
 # Main
@@ -37,36 +48,35 @@ def main():
     # ======================================
     # Checking qstat
 
-    print '\n' + '-'*70
-    print 'Doing qstat:'
-    print
+    if onPsi:
+        pline()
+        print 'Doing qstat: \n'
+        os.system( 'qstat' )
 
-    os.system( 'qstat' )
+    elif onLxplus:
+        pline()
+        print 'Doing bjobs: \n'
+        os.system( 'bjobs' )
 
 
     # ======================================
     # Checking the error outputs
 
-    eFiles = glob( stdDir + '/*.e*' )
+    if onPsi:
+        eFiles = glob( stdDir + '/*.e*' )
+    elif onLxplus:
+        eFiles = glob( 'LSFJOB_*/LSFJOB' )
+
 
     for eFile in eFiles:
 
-        print '\n' + '-'*70
+        pline()
         print 'Contents of ' + os.path.basename( eFile ) + ':'
         print
 
         with open( eFile, 'r' ) as eFP:
-            lines = eFP.readlines()
-
-        if len(lines) > 60 :
-            print ''.join(lines[:30])
-            print
-            print '----- Some lines not shown here -----'
-            print
-            print ''.join(lines[-30:])
-        else:
-            print ''.join(lines)
-
+            eLines = eFP.readlines()
+            PrintNLines( eLines, 50, mode='head' )
 
 
     # ======================================
@@ -74,9 +84,11 @@ def main():
 
     if args.o:
 
-        oFiles = glob( stdDir + '/*.o*' )
+        if onPsi:
+            oFiles = glob( stdDir + '/*.o*' )
+        elif onLxplus:
+            oFiles = glob( 'LSFJOB_*/STDOUT' )
 
-        see_last_n_lines = 50
 
         for oFile in oFiles:
 
@@ -85,12 +97,44 @@ def main():
             print
 
             with open( oFile, 'r' ) as oFP:
-                all_lines = oFP.readlines()
+                oLines = oFP.readlines()
+                PrintNLines( oLines, 60 )
 
-                if len(all_lines) > see_last_n_lines :
-                    all_lines = all_lines[-see_last_n_lines:]
 
-                print ''.join(all_lines)
+
+
+def pline( symbol='-', N=70 ):
+    print '\n' + symbol*N
+
+
+def PrintNLines( lines, N, mode='headtail' ):
+    nLines = len(lines)
+
+    # Simply print all lines
+    if nLines <= N :
+        print ''.join(lines)
+        return
+
+
+    if mode == 'head':
+        print 'Printing head of file'
+        print ''.join(lines[:N])
+        print '<----------------- Rest of file cut off ----------------->'
+        return
+
+    elif mode == 'tail':
+        print 'Printing tail of file'
+        print '<----------------- Beginning of file cut off ----------------->'
+        print ''.join(lines[nLines-N:])
+        return
+
+    elif mode == 'headtail' or mode == 'tailhead':
+        halfN = int(N/2)
+        print 'Printing head and tail of file'
+        print ''.join(lines[:halfN])
+        print '<----------------- Middle of file left out ----------------->'
+        print ''.join(lines[nLines-halfN:])
+        return
 
 
 
