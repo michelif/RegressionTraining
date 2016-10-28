@@ -1,0 +1,13 @@
+# These are the used ECAL-only files for electron training:
+Config_Oct20_electron_EB_ECALonly_results.root
+Config_Oct20_electron_EE_ECALonly_results.root
+
+# For TRKstep2, the "FastOptions" are less precise and should not be used for final results
+Config_Oct25_electron_EB_TRKstep2_FastOptions_results.root
+Config_Oct25_electron_EB_TRKstep2_SlowOptions_results.root
+Config_Oct26_electron_EE_TRKstep2_FastOptions_results.root
+Config_Oct26_electron_EE_TRKstep2_results.root
+
+# These are the photon results
+Config_Oct26_photon_EB_ECALonly_NI3000_results.root
+Config_Oct27_photon_EE_ECALonly_NI3000_results.root
