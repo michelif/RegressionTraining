@@ -216,7 +216,9 @@ int main(int argc, char** argv) {
     float trkMomentumRelError;
     float trkMomentum;
     float eleEcalDriven;
+    float eleEcalDrivenSeed;
     float full5x5_r9;
+    float eOverP;
     float fbrem;
     float gsfchi2;
     float gsfndof;
@@ -241,6 +243,8 @@ int main(int argc, char** argv) {
     testingTree->SetBranchAddress( "trkMomentumRelError", &trkMomentumRelError );
     testingTree->SetBranchAddress( "trkMomentum", &trkMomentum );
     testingTree->SetBranchAddress( "eleEcalDriven", &eleEcalDriven );
+    testingTree->SetBranchAddress( "eleEcalDrivenSeed", &eleEcalDrivenSeed );
+    testingTree->SetBranchAddress( "eOverPuncorr", &eOverP);
     testingTree->SetBranchAddress( "full5x5_r9", &full5x5_r9 );
     testingTree->SetBranchAddress( "fbrem", &fbrem );
     testingTree->SetBranchAddress( "gsfchi2", &gsfchi2 );
@@ -266,6 +270,8 @@ int main(int argc, char** argv) {
         friendtree->Branch("trkMomentumRelError", &trkMomentumRelError, "trkMomentumRelError/F" );
         friendtree->Branch("trkMomentum", &trkMomentum, "trkMomentum/F" );
         friendtree->Branch("eleEcalDriven", &eleEcalDriven, "eleEcalDriven/F" );
+        friendtree->Branch("eleEcalDrivenSeed", &eleEcalDrivenSeed, "eleEcalDrivenSeed/F" );
+        friendtree->Branch("eOverP", &eOverP, "eOverP/F" );
         friendtree->Branch("full5x5_r9", &full5x5_r9, "full5x5_r9/F" );
         friendtree->Branch("fbrem", &fbrem, "fbrem/F" );
         friendtree->Branch("gsfchi2", &gsfchi2, "gsfchi2/F" );
@@ -360,7 +366,7 @@ int main(int argc, char** argv) {
       if (testing) response = genE.EvalInstance()/rawE.EvalInstance();
 		   
       testingTree->GetEntry(iev);
-
+      eOverP *= response;
 
       if (usePtWeightCut) ptWeightCut = ( ptWeightFunction->Eval(genPt) > randomNumber.Rndm() ) ? 1 : 0 ;
 
