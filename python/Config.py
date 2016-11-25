@@ -50,8 +50,8 @@ class Config:
             ]
 
 
-        # self.Target           = "genEnergy/(scRawEnergy+scPreshowerEnergy)"
-        # self.TargetError      = "1.253*abs(BDTresponse - genEnergy/(scRawEnergy+scPreshowerEnergy))"
+        self.Target           = "genEnergy/(scRawEnergy+scPreshowerEnergy)"
+        self.TargetError      = "1.253*abs(BDTresponse - genEnergy/(scRawEnergy+scPreshowerEnergy))"
 
         self.HistoConfig      = "jobs/dummy_Histo.config"
 
@@ -59,9 +59,9 @@ class Config:
         self.CutEB            = "scIsEB"
         self.CutEE            = "!scIsEB"
 
-        # self.TargetComb       = "(genEnergy-(scRawEnergy+scPreshowerEnergy)*BDTresponse)/(trkMomentum-(scRawEnergy+scPreshowerEnergy)*BDTresponse)"
-        # self.CutError         = "((eventNumber%2!=0)&&(((eventNumber-1)/2)%4==3)&&(isMatched==1))"
-        # self.CutComb          = "((eventNumber%2!=0)&&(((eventNumber-1)/2)%4!=3)&&(isMatched==1))"
+        self.TargetComb       = "(genEnergy-(scRawEnergy+scPreshowerEnergy)*BDTresponse)/(trkMomentum-(scRawEnergy+scPreshowerEnergy)*BDTresponse)"
+        self.CutError         = "((eventNumber%2!=0)&&(((eventNumber-1)/2)%4==3)&&(isMatched==1))"
+        self.CutComb          = "((eventNumber%2!=0)&&(((eventNumber-1)/2)%4!=3)&&(isMatched==1))"
 
 
     # ======================================
