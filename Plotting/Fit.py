@@ -157,6 +157,11 @@ def Fit():
     print '    ntup tree: ' + tree_name
 
 
+    hugeTrkErrorStudy = False
+    if hugeTrkErrorStudy:
+        print 'Warning! A specific study is activated!'
+
+
     ########################################
     # FITTING PROCEDURE
     ########################################
@@ -206,6 +211,8 @@ def Fit():
 
     trkMomentum         = ROOT.RooRealVar( "trkMomentum",         "trkMomentum", 0. )
     trkMomentumRelError = ROOT.RooRealVar( "trkMomentumRelError", "trkMomentumRelError", 0. )
+
+    ecalDrivenVar     = ROOT.RooRealVar( "eleEcalDriven",         "eleEcalDriven", 0. )
 
 
     # ======================================
@@ -274,6 +281,8 @@ def Fit():
 
             trkMomentum,
             trkMomentumRelError,
+
+            ecalDrivenVar,
             ]
 
 
@@ -385,7 +394,7 @@ def Fit():
 
         trkWeightVar = hdata.addColumn(trkWeightFormula)
         trkWeightVar.setRange( 0., 2. )
-        trkWeightVar.setBins(100)
+        trkWeightVar.setBins(200)
 
 
         ecalWeightArgList = ROOT.RooArgList(
@@ -409,7 +418,7 @@ def Fit():
 
         ecalWeightVar = hdata.addColumn(ecalWeightFormula)
         ecalWeightVar.setRange( 0., 2. )
-        ecalWeightVar.setBins(100)
+        ecalWeightVar.setBins(200)
 
 
 
@@ -450,6 +459,13 @@ def Fit():
         print '    Reducing total dataset to genPt between {0} and {1}'.format( min_globalPt, max_globalPt )
         hdata_globalPtBin = hdata.reduce( 'genPt>{0}&&genPt<{1}'.format( min_globalPt, max_globalPt ) )
         print '        Number of entries in this genPt selection: ' + str(hdata_globalPtBin.numEntries())
+
+
+        if hugeTrkErrorStudy:
+            print '          Reducing total dataset FURTHER to trkWeightVar<0.01'
+            hdata_globalPtBin = hdata_globalPtBin.reduce( '(trkWeight<0.01)' )
+            print '              Number of entries in this genPt selection now: ' + str(hdata_globalPtBin.numEntries())
+
 
         if not args.second_regression:
             histogramVariables = [
@@ -497,6 +513,31 @@ def Fit():
 
 
         # ======================================
+        # ecalDriven plot
+
+        ecalDriven_bounds = [ 
+            -0.1, 0.5, 1.1
+            ]
+
+        ecalDriven_name = 'ecalDriven-{0:04d}-{1:04d}'.format( int(min_globalPt), int(max_globalPt) )
+        ecalDriven_sliceplot = SlicePlot(
+            name     = ecalDriven_name,
+            longname = particle + region + ecaltrkstr + '_' + ecalDriven_name,
+            plotdir  = plotdir
+            )
+        ecalDriven_sliceplot.SetDataset( hdata_globalPtBin )
+        ecalDriven_sliceplot.SetHistVars(histogramVariables)
+        ecalDriven_sliceplot.SetSliceVar(
+            ecalDrivenVar,
+            ecalDriven_bounds,
+            'ecalDriven'
+            )
+        ecalDriven_sliceplot.FitSlices()
+
+        continue
+
+
+        # ======================================
         # genPt plot
 
         # Get the finer genPt bounds inside this global bin
@@ -518,8 +559,6 @@ def Fit():
             )
         genPt_sliceplot.FitSlices()
 
-
-        continue
 
         # ======================================
         # genEta plot
@@ -577,6 +616,10 @@ def Fit():
             'r9'
             )
         r9_sliceplot.FitSlices()
+
+
+
+
 
 
 
