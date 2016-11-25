@@ -228,11 +228,15 @@ int main(int argc, char** argv) {
     int   NtupID;
     int   eventNumber;
 
+    int run;
+    int luminosityBlock;
+
     float pt;
     float scEta;
     float corrEnergy74X;
     float corrEnergy74XError;
 
+    float gsfnhits;
 
     testingTree->SetBranchAddress( "scIsEB", &scIsEB );
     testingTree->SetBranchAddress( "genEnergy", &genEnergy );
@@ -253,10 +257,16 @@ int main(int argc, char** argv) {
     testingTree->SetBranchAddress( "NtupID", &NtupID );
     testingTree->SetBranchAddress( "eventNumber", &eventNumber );
 
+    testingTree->SetBranchAddress( "run", &run );
+    testingTree->SetBranchAddress( "luminosityBlock", &luminosityBlock );
+
     testingTree->SetBranchAddress( "pt", &pt );
     testingTree->SetBranchAddress( "scEta", &scEta );
     testingTree->SetBranchAddress( "corrEnergy74X", &corrEnergy74X );
     testingTree->SetBranchAddress( "corrEnergy74XError", &corrEnergy74XError );
+
+    testingTree->SetBranchAddress( "gsfnhits", &gsfnhits );
+
 
     if (saveTRKvarse) {
         friendtree->Branch("scIsEB", &scIsEB, "scIsEB/I" );
@@ -278,10 +288,15 @@ int main(int argc, char** argv) {
         friendtree->Branch("NtupID", &NtupID, "NtupID/I" );
         friendtree->Branch("eventNumber", &eventNumber, "eventNumber/I" );
 
+        friendtree->Branch("run", &run, "run/I" );
+        friendtree->Branch("luminosityBlock", &luminosityBlock, "luminosityBlock/I" );
+
         friendtree->Branch("pt", &pt, "pt/F" );
         friendtree->Branch("scEta", &scEta, "scEta/F" );
         friendtree->Branch("corrEnergy74X", &corrEnergy74X, "corrEnergy74X/F" );
         friendtree->Branch("corrEnergy74XError", &corrEnergy74XError, "corrEnergy74XError/F" );
+
+        friendtree->Branch("gsfnhits", &gsfnhits, "gsfnhits/F" );
     }
     // ------------------------
 
