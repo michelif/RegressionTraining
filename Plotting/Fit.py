@@ -515,26 +515,26 @@ def Fit():
         # ======================================
         # ecalDriven plot
 
-        ecalDriven_bounds = [ 
-            -0.1, 0.5, 1.1
-            ]
+        # ecalDriven_bounds = [ 
+        #     -0.1, 0.5, 1.1
+        #     ]
 
-        ecalDriven_name = 'ecalDriven-{0:04d}-{1:04d}'.format( int(min_globalPt), int(max_globalPt) )
-        ecalDriven_sliceplot = SlicePlot(
-            name     = ecalDriven_name,
-            longname = particle + region + ecaltrkstr + '_' + ecalDriven_name,
-            plotdir  = plotdir
-            )
-        ecalDriven_sliceplot.SetDataset( hdata_globalPtBin )
-        ecalDriven_sliceplot.SetHistVars(histogramVariables)
-        ecalDriven_sliceplot.SetSliceVar(
-            ecalDrivenVar,
-            ecalDriven_bounds,
-            'ecalDriven'
-            )
-        ecalDriven_sliceplot.FitSlices()
+        # ecalDriven_name = 'ecalDriven-{0:04d}-{1:04d}'.format( int(min_globalPt), int(max_globalPt) )
+        # ecalDriven_sliceplot = SlicePlot(
+        #     name     = ecalDriven_name,
+        #     longname = particle + region + ecaltrkstr + '_' + ecalDriven_name,
+        #     plotdir  = plotdir
+        #     )
+        # ecalDriven_sliceplot.SetDataset( hdata_globalPtBin )
+        # ecalDriven_sliceplot.SetHistVars(histogramVariables)
+        # ecalDriven_sliceplot.SetSliceVar(
+        #     ecalDrivenVar,
+        #     ecalDriven_bounds,
+        #     'ecalDriven'
+        #     )
+        # ecalDriven_sliceplot.FitSlices()
 
-        continue
+        # continue
 
 
         # ======================================
@@ -593,29 +593,29 @@ def Fit():
         # ======================================
         # r9 plot
 
-        if args.second_regression:
-            r9Var = full5x5_r9
-        else:
-            r9Var = r9
+        # if args.second_regression:
+        #     r9Var = full5x5_r9
+        # else:
+        #     r9Var = r9
 
-        r9_bounds = [ 
-            0.5, 0.8, 0.85, 0.9, 0.92, 0.94, 0.95, 0.96, 0.97, 1.0
-            ]
+        # r9_bounds = [ 
+        #     0.5, 0.8, 0.85, 0.9, 0.92, 0.94, 0.95, 0.96, 0.97, 1.0
+        #     ]
 
-        r9_name = 'R9-{0:04d}-{1:04d}'.format( int(min_globalPt), int(max_globalPt) )
-        r9_sliceplot = SlicePlot(
-            name     = r9_name,
-            longname = particle + region + ecaltrkstr + '_' + r9_name,
-            plotdir  = plotdir
-            )
-        r9_sliceplot.SetDataset( hdata_globalPtBin )
-        r9_sliceplot.SetHistVars(histogramVariables)
-        r9_sliceplot.SetSliceVar(
-            r9Var,
-            r9_bounds,
-            'r9'
-            )
-        r9_sliceplot.FitSlices()
+        # r9_name = 'R9-{0:04d}-{1:04d}'.format( int(min_globalPt), int(max_globalPt) )
+        # r9_sliceplot = SlicePlot(
+        #     name     = r9_name,
+        #     longname = particle + region + ecaltrkstr + '_' + r9_name,
+        #     plotdir  = plotdir
+        #     )
+        # r9_sliceplot.SetDataset( hdata_globalPtBin )
+        # r9_sliceplot.SetHistVars(histogramVariables)
+        # r9_sliceplot.SetSliceVar(
+        #     r9Var,
+        #     r9_bounds,
+        #     'r9'
+        #     )
+        # r9_sliceplot.FitSlices()
 
 
 
