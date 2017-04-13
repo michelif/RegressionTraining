@@ -28,6 +28,7 @@ parser.add_argument( '-q', '--queue',
     default='2nw', help='which queue to submit to')
 parser.add_argument( '-n', '--normalmemory', action='store_true', help='By default more memory is requested; this option disables that')
 parser.add_argument( '-k', '--keep', action='store_true', help='Does not clean the output and jobscript directories')
+parser.add_argument( '--requestMemory', action='store_true', help='Requests more memory on lxplus')
 parser.add_argument( '-c', '--configs',
     metavar='N', type=str, nargs='+',
     default='none',
@@ -160,6 +161,10 @@ def Make_jobscript( cfg, jobscriptDir, stdDir ):
 
         cmd = 'bsub -q {0} -J {1} < '.format(args.queue, sh_file.rsplit('/',1)[-1].replace('.sh','') ) + os.path.relpath(sh_file)
 
+        if args.requestMemory:
+            cmd  = cmd.replace( 'bsub', 'bsub -R "rusage[mem=30000]" ' )
+
+        
 
     # ------------------
     # Submission

@@ -24,6 +24,7 @@ def Make_conf(Verbose=True):
 
     parser = argparse.ArgumentParser()
     parser.add_argument( '--inputrootfile', '-i', type=str, help='Path to root file',
+        # default='/afs/cern.ch/work/t/tklijnsm/public/CMSSW_8_0_4/src/NTuples/Ntup_Jul22_fullpt_training.root'
         default='/afs/cern.ch/work/t/tklijnsm/public/CMSSW_8_0_4/src/NTuples/Ntup_Jul22_fullpt_training.root'
         )
     parser.add_argument(
@@ -74,7 +75,7 @@ def Make_conf(Verbose=True):
 
     # for region in [ 'EB', 'EE' ]:
     for region in args.region:
-        for ECAL_AND_TRK in [ False, True ]:
+        for ECAL_AND_TRK in [ False ]:
             # for particle in [ 'electron', 'photon' ]:
             for particle in args.particle:
                 if ECAL_AND_TRK and particle=='photon': continue # Photon doesn't have TRK vars
@@ -90,7 +91,7 @@ def Make_conf(Verbose=True):
                 else:
                     config.Name += '_ECALonly'
 
-                if args.name: config.Name += '_' + args.name
+                if args.name and args.name!='NONE' : config.Name += '_' + args.name
 
 
                 config.InputFiles = physical_path( root_file )
@@ -139,28 +140,89 @@ def Make_conf(Verbose=True):
                 # ======================================
                 # Sample division - need a part for the ECAL-only training, and a part for the combination
 
-                if particle == 'electron':
-                    # 66% for the main BDT - divide the sample in divideNumber pieces, and use all but one piece for the main BDT
-                    divideNumber            = 3
-                    config.CutBase          = "eventNumber%{0}!=0".format( divideNumber )
 
-                    # 17% for combination, 17% for error
-                    config.CutComb          = "eventNumber%{0}==0 && eventNumber%{1}==0".format( divideNumber, 2*divideNumber )
-                    config.CutError         = "eventNumber%{0}==0 && eventNumber%{1}!=0".format( divideNumber, 2*divideNumber )
-                elif particle == 'photon':
-                    config.CutBase          = '1.0'
-                    config.CutComb          = '1.0'
-                    config.CutError         = '1.0'
+                # WITH EP COMBINATION TRAINING IN SERIES, THIS IS NO LONGER NEEDED
+
+                # if particle == 'electron':
+                #     # 66% for the main BDT - divide the sample in divideNumber pieces, and use all but one piece for the main BDT
+                #     divideNumber            = 3
+                #     config.CutBase          = "eventNumber%{0}!=0".format( divideNumber )
+
+                #     # 17% for combination, 17% for error
+                #     config.CutComb          = "eventNumber%{0}==0 && eventNumber%{1}==0".format( divideNumber, 2*divideNumber )
+                #     config.CutError         = "eventNumber%{0}==0 && eventNumber%{1}!=0".format( divideNumber, 2*divideNumber )
+                # elif particle == 'photon':
+                #     config.CutBase          = '1.0'
+                #     config.CutComb          = '1.0'
+                #     config.CutError         = '1.0'
+
+
+                config.CutBase          = '1.0'
+                config.CutComb          = '1.0'
+                config.CutError         = '1.0'
+
 
                 # # TEMPORARY: cut events drastically for test mode
-                config.CutBase  += " && NtupID<3000"
-                config.CutComb  += " && NtupID<3000"
-                config.CutError += " && NtupID<3000"
+                config.CutBase  += " && NtupID<4000"
+                config.CutComb  += " && NtupID<4000"
+                config.CutError += " && NtupID<4000"
 
 
                 ########################################
                 # Order tree branches
                 ########################################
+
+
+                # Agreed list on November 23:
+
+                # eval[0]  = raw_energy;
+                # eval[1]  = the_sc->etaWidth();
+                # eval[2]  = the_sc->phiWidth(); 
+                # eval[3]  = full5x5_ess.e5x5/raw_energy;
+                # eval[4]  = ele.hcalOverEcalBc();
+                # eval[5]  = rhoValue_;
+                # eval[6]  = theseed->eta() - the_sc->position().Eta();
+                # eval[7]  = reco::deltaPhi( theseed->phi(),the_sc->position().Phi());
+                # eval[8]  = full5x5_ess.r9;
+                # eval[9]  = full5x5_ess.sigmaIetaIeta;
+                # eval[10]  = full5x5_ess.sigmaIetaIphi;
+                # eval[11]  = full5x5_ess.sigmaIphiIphi;
+                # eval[12]  = full5x5_ess.eMax/full5x5_ess.e5x5;
+                # eval[13]  = full5x5_ess.e2nd/full5x5_ess.e5x5;
+                # eval[14]  = full5x5_ess.eTop/full5x5_ess.e5x5;
+                # eval[15]  = full5x5_ess.eBottom/full5x5_ess.e5x5;
+                # eval[16]  = full5x5_ess.eLeft/full5x5_ess.e5x5;
+                # eval[17]  = full5x5_ess.eRight/full5x5_ess.e5x5;
+                # eval[18]  = EcalClusterToolsT<true>::e2x5Max(*theseed, &*ecalRecHits, topology_)/full5x5_ess.e5x5;
+                # eval[19]  = EcalClusterToolsT<true>::e2x5Left(*theseed, &*ecalRecHits, topology_)/full5x5_ess.e5x5;
+                # eval[20]  = EcalClusterToolsT<true>::e2x5Right(*theseed, &*ecalRecHits, topology_)/full5x5_ess.e5x5;
+                # eval[21]  = EcalClusterToolsT<true>::e2x5Top(*theseed, &*ecalRecHits, topology_)/full5x5_ess.e5x5;
+                # eval[22]  = EcalClusterToolsT<true>::e2x5Bottom(*theseed, &*ecalRecHits, topology_)/full5x5_ess.e5x5;
+                # eval[23]  = N_SATURATEDXTALS;
+                # eval[24]  = std::max(0,numberOfClusters);
+                # eval[25] = clusterRawEnergy[0]/raw_energy;
+                # eval[26] = clusterRawEnergy[1]/raw_energy;
+                # eval[27] = clusterRawEnergy[2]/raw_energy;
+                # eval[28] = clusterDPhiToSeed[0];
+                # eval[29] = clusterDPhiToSeed[1];
+                # eval[30] = clusterDPhiToSeed[2];
+                # eval[31] = clusterDEtaToSeed[0];
+                # eval[32] = clusterDEtaToSeed[1];
+                # eval[33] = clusterDEtaToSeed[2];
+
+                # eval[34] = ieta;
+                # eval[35] = iphi;
+                # eval[36] = (ieta-signieta)%5;
+                # eval[37] = (iphi-1)%2;
+                # eval[38] = (abs(ieta)<=25)*((ieta-signieta)) + (abs(ieta)>25)*((ieta-26*signieta)%20);  
+                # eval[39] = (iphi-1)%20;
+
+                # eval[34] = raw_es_energy/raw_energy;
+                # eval[35] = the_sc->preshowerEnergyPlane1()/raw_energy;
+                # eval[36] = the_sc->preshowerEnergyPlane2()/raw_energy;
+                # eval[37] = eeseedid.ix();
+                # eval[38] = eeseedid.iy();
+
 
                 common_vars = [
 
@@ -302,8 +364,8 @@ def Make_conf(Verbose=True):
                     'iXCoordinate',
                     'iYCoordinate',
                     'scPreshowerEnergy/scRawEnergy',
-                    'preshowerEnergyPlane1/scRawEnergy',
-                    'preshowerEnergyPlane2/scRawEnergy',
+                    # 'preshowerEnergyPlane1/scRawEnergy',
+                    # 'preshowerEnergyPlane2/scRawEnergy',
                     ]
 
                 if Verbose:
@@ -319,39 +381,42 @@ def Make_conf(Verbose=True):
                 # Ep combination
                 ########################################
 
-                # Only do the combination for the electron AND there are no tracking variables
-                if particle == 'electron' and not ECAL_AND_TRK:
+                # NOVEMBER 25: NO LONGER NECESSARY TO RUN OLD EP COMBO
+                config.DoCombine        = "False"
 
-                    config.DoCombine        = "True"
 
-                    config.TargetComb       = "( genEnergy - ( scRawEnergy + scPreshowerEnergy )*BDTresponse ) / ( trkMomentum - ( scRawEnergy + scPreshowerEnergy )*BDTresponse )"
-                    config.TargetError      = "1.253*abs(BDTresponse - genEnergy/(scRawEnergy+scPreshowerEnergy))"
+                # # Only do the combination for the electron AND there are no tracking variables
+                # if particle == 'electron' and not ECAL_AND_TRK:
 
-                    config.VariablesComb = [
-                        '( scRawEnergy + scPreshowerEnergy ) * BDTresponse',
-                        'BDTerror/BDTresponse',
-                        'trkMomentumRelError',
-                        'trkMomentum/(( scRawEnergy + scPreshowerEnergy )*BDTresponse)',
-                        'eleEcalDriven',
-                        'full5x5_r9',
-                        'fbrem',
-                        'gsfchi2',
-                        'gsfndof', 
-                        'trkEta',
-                        'trkPhi'     # The best way to describe cracks is to use the track (unbiased) directorion
-                       # 'trkMomentum',                                # RCLSA Again, let us choose one absolute scale and the rest be relative
-                       # 'BDTerror/BDTresponse/trkMomentumRelError',   
-                       # ( '( scRawEnergy + scPreshowerEnergy )*BDTresponse/trkMomentum  *' +
-                       #   'sqrt( BDTerror/BDTresponse*BDTerror/BDTresponse + trkMomentumRelError*trkMomentumRelError)' ),
-                       # 'eleClass',
-                       # 'scIsEB',
-                        ]
+                #     config.DoCombine        = "True"
+
+                #     config.TargetComb       = "( genEnergy - ( scRawEnergy + scPreshowerEnergy )*BDTresponse ) / ( trkMomentum - ( scRawEnergy + scPreshowerEnergy )*BDTresponse )"
+                #     config.TargetError      = "1.253*abs(BDTresponse - genEnergy/(scRawEnergy+scPreshowerEnergy))"
+
+                #     config.VariablesComb = [
+                #         '( scRawEnergy + scPreshowerEnergy ) * BDTresponse',
+                #         'BDTerror/BDTresponse',
+                #         'trkMomentumRelError',
+                #         'trkMomentum/(( scRawEnergy + scPreshowerEnergy )*BDTresponse)',
+                #         'eleEcalDriven',
+                #         'full5x5_r9',
+                #         'fbrem',
+                #         'gsfchi2',
+                #         'gsfndof', 
+                #         'trkEta',
+                #         'trkPhi'     # The best way to describe cracks is to use the track (unbiased) directorion
+                #        # 'trkMomentum',                                # RCLSA Again, let us choose one absolute scale and the rest be relative
+                #        # 'BDTerror/BDTresponse/trkMomentumRelError',   
+                #        # ( '( scRawEnergy + scPreshowerEnergy )*BDTresponse/trkMomentum  *' +
+                #        #   'sqrt( BDTerror/BDTresponse*BDTerror/BDTresponse + trkMomentumRelError*trkMomentumRelError)' ),
+                #        # 'eleClass',
+                #        # 'scIsEB',
+                #         ]
                 
-                else:
-                    config.DoCombine        = "False"
+                # else:
+                #     config.DoCombine        = "False"
 
-                # # Not necessary if the TRK vars in the main BDT
-                # config.DoCombine        = "False"
+
 
 
                 ########################################

@@ -56,7 +56,7 @@ def Make_conf(Verbose=True):
             if args.name and args.name!='NONE' : config.Name += '_' + args.name
 
 
-            config.InputFiles = args.inputrootfile
+            config.InputFiles = os.path.abspath( args.inputrootfile )
             config.Tree       = 'een_analyzer/{0}Tree'.format( particle.capitalize() )
 
 

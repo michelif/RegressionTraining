@@ -23,7 +23,7 @@ def MakeConf(Verbose=True):
     parser = argparse.ArgumentParser()
     parser.add_argument( '--inputrootfile', '-i', type=str, help='Path to root file',
         # default='../applyRegression/Config_Sep30_electron_EB_ECALonly_appliedRegression_training.root'
-        default='../Config_Oct25_electron_EB_ECALonly_appliedRegression_training_ptWeight.root'
+        # default='../Config_Oct25_electron_EB_ECALonly_appliedRegression_training_ptWeight.root'
         )
     parser.add_argument(
         '--region', metavar='N', type=str, nargs='+', help='Specify regions',
@@ -160,6 +160,7 @@ def MakeConf(Verbose=True):
             print '    ' + '\n    '.join( config.VariablesEB )
 
         config.DoCombine        = "False"
+        config.DoErrors         = "False"
 
 
         ########################################

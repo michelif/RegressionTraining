@@ -137,25 +137,75 @@ def main():
 
         ### PHOTONS
 
-        # EB fitjob
+        # # EB fitjob
+        # (
+        #     '../savedResults/UsedForOct28Talk/Config_Oct26_photon_EB_ECALonly_NI3000_results.root',
+        #     [0., 100., 500., 2500., 6500., ],
+        #     '/afs/cern.ch/work/t/tklijnsm/public/CMSSW_8_0_4/src/NTuples/Ntup_Jul22_fullpt_testing.root',
+        #     False
+        #     ),
+
+        # # EE fitjob
+        # (
+        #     # '../savedResults/UsedForOct28Talk/Config_Oct26_photon_EB_ECALonly_NI3000_results.root',
+        #     # '../Config_Oct27_photon_EE_ECALonly_NI3000_Fast_results.root',
+        #     '../Config_Oct27_photon_EE_ECALonly_NI3000_results.root',
+        #     [0., 100., 500., 2500., 6500., ],
+        #     '/afs/cern.ch/work/t/tklijnsm/public/CMSSW_8_0_4/src/NTuples/Ntup_Jul22_fullpt_testing.root',
+        #     False
+        #     ),
+
+
+
+        # # EB fitjob (trkMomentumResolved runs)
+        # (
+        #     '../savedResults/trkMomIssueResolved/Config_Nov25_electron_EB_results.root',
+        #     [0., 100., 500., 2500., 6500., ],
+        #     '/afs/cern.ch/work/r/rcoelhol/public/CMSSW_8_0_12/src/NTuples/Ntup_10Nov_Electron_0.root',
+        #     False
+        #     ),
+
+        # (
+        #     '../savedResults/trkMomIssueResolved/Config_Nov25_electron_EE_results.root',
+        #     [0., 100., 500., 2500., 6500., ],
+        #     '/afs/cern.ch/work/r/rcoelhol/public/CMSSW_8_0_12/src/NTuples/Ntup_10Nov_Electron_4.root',
+        #     False
+        #     ),
+
+        # trkMomentumResolved runs December 02
+
         (
-            '../savedResults/UsedForOct28Talk/Config_Oct26_photon_EB_ECALonly_NI3000_results.root',
+            '../savedResults/trkMomIssueResolved/Config_Nov28_electron_EB_TRKstep2_FastOptions_results.root',
             [0., 100., 500., 2500., 6500., ],
-            '/afs/cern.ch/work/t/tklijnsm/public/CMSSW_8_0_4/src/NTuples/Ntup_Jul22_fullpt_testing.root',
+            '../applyRegression/Config_Nov25_electron_EB_results_testing_ptWeight.root',
+            True
+            ),
+
+        (
+            '../savedResults/trkMomIssueResolved/Config_Nov28_electron_EE_TRKstep2_results.root',
+            [0., 100., 500., 2500., 6500., ],
+            '../applyRegression/Config_Nov25_electron_EE_results_testing_ptWeight.root',
+            True
+            ),
+
+
+        (
+            '../savedResults/trkMomIssueResolved/Config_Nov29_photon_EB_FastOptions_results.root',
+            [0., 100., 500., 2500., 6500., ],
+            '../applyRegression/Ntup_10Nov_testing.root',
             False
             ),
 
-        # EE fitjob
+
         (
-            # '../savedResults/UsedForOct28Talk/Config_Oct26_photon_EB_ECALonly_NI3000_results.root',
-            # '../Config_Oct27_photon_EE_ECALonly_NI3000_Fast_results.root',
-            '../Config_Oct27_photon_EE_ECALonly_NI3000_results.root',
+            '../savedResults/trkMomIssueResolved/Config_Nov25_photon_EE_results.root',
             [0., 100., 500., 2500., 6500., ],
-            '/afs/cern.ch/work/t/tklijnsm/public/CMSSW_8_0_4/src/NTuples/Ntup_Jul22_fullpt_testing.root',
+            '../applyRegression/Ntup_10Nov_testing.root',
             False
             ),
 
         ]
+
 
 
     ########################################
