@@ -87,7 +87,8 @@ int main(int argc, char** argv) {
 
   if (!vm.count("testing")) {
     testingFileName = getenv("CMSSW_BASE");
-    testingFileName = testingFileName + "/src/NTuples/Ntup_Jul22_fullpt_testing.root";
+    //    testingFileName = testingFileName + "/src/NTuples/Ntup_Jul22_fullpt_testing.root";
+    testingFileName = testingFileName ;
   }
 
   if (!vm.count("output")) {
@@ -212,6 +213,38 @@ int main(int argc, char** argv) {
     int scIsEB;
     float genEnergy;
     float scRawEnergy;
+    float scEtaWidth;
+    float scPhiWidth;
+    float full5x5_e5x5;
+    float hadronicOverEm;
+    float rhoValue;
+    float delEtaSeed;
+    float delPhiSeed;
+    float full5x5_sigmaIetaIeta;
+    float full5x5_sigmaIetaIphi;
+    float full5x5_sigmaIphiIphi;
+    float full5x5_eMax;
+    float full5x5_e2nd;
+    float full5x5_eTop;
+    float full5x5_eBottom;
+    float full5x5_eLeft;
+    float full5x5_eRight;
+    float full5x5_e2x5Max;
+    float full5x5_e2x5Left;
+    float full5x5_e2x5Right;
+    float full5x5_e2x5Top;
+    float full5x5_e2x5Bottom;
+    int N_SATURATEDXTALS;
+    int N_ECALClusters;
+    std::vector<float> * clusterRawEnergy=0;
+    std::vector<float> * clusterDPhiToSeed=0;
+    std::vector<float> * clusterDEtaToSeed=0;
+    std::vector<int> *     iEtaMod5=0;
+    std::vector<int> *     iPhiMod2=0;
+    std::vector<int> *     iEtaMod20=0;
+    std::vector<int> *     iPhiMod20=0;
+    std::vector<int> * iEtaCoordinate=0;
+    std::vector<int> *     iPhiCoordinate=0;
     float scPreshowerEnergy;
     float trkMomentumRelError;
     float trkMomentum;
@@ -243,6 +276,39 @@ int main(int argc, char** argv) {
     testingTree->SetBranchAddress( "scIsEB", &scIsEB );
     testingTree->SetBranchAddress( "genEnergy", &genEnergy );
     testingTree->SetBranchAddress( "scRawEnergy", &scRawEnergy );
+    testingTree->SetBranchAddress( "scEtaWidth", &scEtaWidth );
+    testingTree->SetBranchAddress("scPhiWidth", &scPhiWidth);
+    testingTree->SetBranchAddress("full5x5_e5x5", &full5x5_e5x5);
+    testingTree->SetBranchAddress("hadronicOverEm", &hadronicOverEm);
+    testingTree->SetBranchAddress("rhoValue", &rhoValue);
+    testingTree->SetBranchAddress("delEtaSeed", &delEtaSeed);
+    testingTree->SetBranchAddress("delPhiSeed", &delPhiSeed);
+    testingTree->SetBranchAddress("full5x5_sigmaIetaIeta", &full5x5_sigmaIetaIeta);
+    testingTree->SetBranchAddress("full5x5_sigmaIetaIphi", &full5x5_sigmaIetaIphi);
+    testingTree->SetBranchAddress("full5x5_sigmaIphiIphi", &full5x5_sigmaIphiIphi);
+    testingTree->SetBranchAddress("full5x5_eMax", &full5x5_eMax);
+    testingTree->SetBranchAddress("full5x5_e2nd", &full5x5_e2nd);
+    testingTree->SetBranchAddress("full5x5_eTop", &full5x5_eTop);
+    testingTree->SetBranchAddress("full5x5_eBottom", &full5x5_eBottom);
+    testingTree->SetBranchAddress("full5x5_eLeft", &full5x5_eLeft);
+    testingTree->SetBranchAddress("full5x5_eRight", &full5x5_eRight);
+    testingTree->SetBranchAddress("full5x5_e2x5Max", &full5x5_e2x5Max);
+    testingTree->SetBranchAddress("full5x5_e2x5Left", &full5x5_e2x5Left);
+    testingTree->SetBranchAddress("full5x5_e2x5Right", &full5x5_e2x5Right);
+    testingTree->SetBranchAddress("full5x5_e2x5Top", &full5x5_e2x5Top);
+    testingTree->SetBranchAddress("full5x5_e2x5Bottom", &full5x5_e2x5Bottom);
+    testingTree->SetBranchAddress("N_SATURATEDXTALS", &N_SATURATEDXTALS);
+    testingTree->SetBranchAddress("N_ECALClusters", &N_ECALClusters);
+    testingTree->SetBranchAddress("clusterRawEnergy", &clusterRawEnergy);
+    testingTree->SetBranchAddress("clusterDPhiToSeed", &clusterDPhiToSeed);
+    testingTree->SetBranchAddress("clusterDEtaToSeed", &clusterDEtaToSeed);
+    testingTree->SetBranchAddress("iEtaCoordinate", &iEtaCoordinate);
+    testingTree->SetBranchAddress("iPhiCoordinate", &iPhiCoordinate);
+    testingTree->SetBranchAddress("iEtaMod5", &iEtaMod5);
+    testingTree->SetBranchAddress("iPhiMod2", &iPhiMod2);
+    testingTree->SetBranchAddress("iEtaMod20", &iEtaMod20);
+    testingTree->SetBranchAddress("iPhiMod20", &iPhiMod20);
+
     testingTree->SetBranchAddress( "scPreshowerEnergy", &scPreshowerEnergy );
     testingTree->SetBranchAddress( "trkMomentumRelError", &trkMomentumRelError );
     testingTree->SetBranchAddress( "trkMomentum", &trkMomentum );
@@ -276,6 +342,39 @@ int main(int argc, char** argv) {
         friendtree->Branch("scIsEB", &scIsEB, "scIsEB/I" );
         friendtree->Branch("genEnergy", &genEnergy, "genEnergy/F" );
         friendtree->Branch("scRawEnergy", &scRawEnergy, "scRawEnergy/F" );
+        friendtree->Branch("scEtaWidth", &scEtaWidth, "scEtaWidth/F" );
+	friendtree->Branch("scPhiWidth", &scPhiWidth, "scPhiWidth/F" );
+	friendtree->Branch("full5x5_e5x5", &full5x5_e5x5, "full5x5_e5x5/F");
+	friendtree->Branch("hadronicOverEm", &hadronicOverEm, "hadronicOverEm/F");
+	friendtree->Branch("rhoValue", &rhoValue, "rhoValue/F");
+	friendtree->Branch("delEtaSeed", &delEtaSeed, "delEtaSeed/F");
+	friendtree->Branch("delPhiSeed", &delPhiSeed, "delPhiSeed/F");
+	friendtree->Branch("full5x5_sigmaIetaIeta", &full5x5_sigmaIetaIeta, "full5x5_sigmaIetaIeta/F");
+	friendtree->Branch("full5x5_sigmaIetaIphi", &full5x5_sigmaIetaIphi, "full5x5_sigmaIetaIphi/F");
+	friendtree->Branch("full5x5_sigmaIphiIphi", &full5x5_sigmaIphiIphi, "full5x5_sigmaIphiIphi/F");
+	friendtree->Branch("full5x5_eMax", &full5x5_eMax, "full5x5_eMax/F");
+	friendtree->Branch("full5x5_e2nd", &full5x5_e2nd, "full5x5_e2nd/F");
+	friendtree->Branch("full5x5_eTop", &full5x5_eTop, "full5x5_eTop/F");
+	friendtree->Branch("full5x5_eBottom", &full5x5_eBottom, "full5x5_eBottom/F");
+	friendtree->Branch("full5x5_eLeft", &full5x5_eLeft, "full5x5_eLeft/F");
+	friendtree->Branch("full5x5_eRight", &full5x5_eRight, "full5x5_eRight/F");
+	friendtree->Branch("full5x5_e2x5Max", &full5x5_e2x5Max, "full5x5_e2x5Max/F");
+	friendtree->Branch("full5x5_e2x5Left", &full5x5_e2x5Left, "full5x5_e2x5Left/F");
+	friendtree->Branch("full5x5_e2x5Right", &full5x5_e2x5Right, "full5x5_e2x5Right/F");
+	friendtree->Branch("full5x5_e2x5Top", &full5x5_e2x5Top, "full5x5_e2x5Top/F");
+	friendtree->Branch("full5x5_e2x5Bottom", &full5x5_e2x5Bottom, "full5x5_e2x5Bottom/F");
+	friendtree->Branch("N_SATURATEDXTALS", &N_SATURATEDXTALS, "N_SATURATEDXTALS/I");
+	friendtree->Branch("N_ECALClusters", &N_ECALClusters, "N_ECALClusters/I");
+	friendtree->Branch("clusterRawEnergy", &clusterRawEnergy);
+	friendtree->Branch("clusterDPhiToSeed", &clusterDPhiToSeed);
+	friendtree->Branch("clusterDEtaToSeed", &clusterDEtaToSeed);
+	friendtree->Branch("iEtaCoordinate", &iEtaCoordinate);
+	friendtree->Branch("iPhiCoordinate", &iPhiCoordinate);
+	friendtree->Branch("iEtaMod5", &iEtaMod5);
+	friendtree->Branch("iPhiMod2", &iPhiMod2);
+	friendtree->Branch("iEtaMod20", &iEtaMod20);
+	friendtree->Branch("iPhiMod20", &iPhiMod20);
+
         friendtree->Branch("scPreshowerEnergy", &scPreshowerEnergy, "scPreshowerEnergy/F" );
         friendtree->Branch("trkMomentumRelError", &trkMomentumRelError, "trkMomentumRelError/F" );
         friendtree->Branch("trkMomentum", &trkMomentum, "trkMomentum/F" );
@@ -328,7 +427,7 @@ int main(int argc, char** argv) {
 
 
     for (Long64_t iev=0; iev<testingTree->GetEntries(); ++iev) {
-
+      if(debug)      if (iev>100) break; //running only on 100 events if debug
       response = 0.;
       resolution = 0.;
       if (iev%100000==0) printf("%i\n",int(iev));
@@ -347,6 +446,7 @@ int main(int argc, char** argv) {
 	    valsEB[i] = 0.0;
 	    //	    cout << "Zeroing " << inputformsEB[i]->GetExpFormula().Data() << endl;
 	  }
+	  if (debug) cout << "--------------in barrel----------------------" <<endl;
 	  if (debug) cout << i << " " << inputformsEB[i]->GetExpFormula().Data() << " " << valsEB[i] << endl;
 	}
 	if (doEB) {
