@@ -428,6 +428,8 @@ int main(int argc, char** argv) {
 
     for (Long64_t iev=0; iev<testingTree->GetEntries(); ++iev) {
       if(debug)      if (iev>100) break; //running only on 100 events if debug
+      //      if(iev>1500000) break; ///////////////////////////////////////////////////////////FIXME REMOVE THIS LIMIT
+      if (iev<2564249) continue;//FIXME this is a quick hack since all events at  energy<300 are after .2Millions
       response = 0.;
       resolution = 0.;
       if (iev%100000==0) printf("%i\n",int(iev));
@@ -481,10 +483,12 @@ int main(int argc, char** argv) {
       if (testing) response = genE.EvalInstance()/rawE.EvalInstance();
 		   
       testingTree->GetEntry(iev);
+      if(genEnergy/scRawEnergy>3) continue;///FIXME maybe remove?
+
       eOverP *= response;
 
       if (usePtWeightCut) ptWeightCut = ( ptWeightFunction->Eval(genPt) > randomNumber.Rndm() ) ? 1 : 0 ;
-
+      
 
       friendtree->Fill();
       
