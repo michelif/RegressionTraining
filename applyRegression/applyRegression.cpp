@@ -64,7 +64,8 @@ int main(int argc, char** argv) {
   string trainingEB;
   string trainingEE;
   string supressVariable;
-  
+  string isTraining;  
+
   options_description desc("Allowed options");
   desc.add_options()
     ("help,h", "print usage message")
@@ -74,6 +75,7 @@ int main(int argc, char** argv) {
     ("testing,t", value<string>(&testingFileName), "Testing tree")
     ("output,o", value<string>(&outputFileName), "Output friend tree")
     ("zero,z", value<string>(&supressVariable), "Force variable to zero (for sensitivity studies)")
+    ("isTraining,i", value<string>(&isTraining),"Running to create training sample")
     ;
 
   variables_map vm;
@@ -425,21 +427,21 @@ int main(int argc, char** argv) {
 
 
 
-
     for (Long64_t iev=0; iev<testingTree->GetEntries(); ++iev) {
       if(debug)      if (iev>100) break; //running only on 100 events if debug
-      //      if(iev>1500000) break; ///////////////////////////////////////////////////////////FIXME REMOVE THIS LIMIT
-      if (iev<2564249) continue;//FIXME this is a quick hack since all events at  energy<300 are after .2Millions
       response = 0.;
       resolution = 0.;
+      
+
+
       if (iev%100000==0) printf("%i\n",int(iev));
       testingTree->LoadTree(iev);
       bool isEB = formIsEB.EvalInstance();
       bool isEE = formIsEE.EvalInstance();
 
-      // NtupID->GetBranch()->GetEntry(iev);
-      // NtupIDVal = NtupID->GetValue();
-      // if (NtupIDVal < 5000) continue;
+
+      //      NtupID>GetBranch()->GetEntry(iev);
+      //      float NtupIDVal = NtupID->GetValue();
 
       if (isEB) {
 	for (int i=0; i<nvarsEB; ++i) {
@@ -483,7 +485,13 @@ int main(int argc, char** argv) {
       if (testing) response = genE.EvalInstance()/rawE.EvalInstance();
 		   
       testingTree->GetEntry(iev);
-      if(genEnergy/scRawEnergy>3) continue;///FIXME maybe remove?
+      if(genEnergy/scRawEnergy>10) continue;///FIXME maybe remove?
+      // if (NtupIDVal < 5000) continue;
+      if(NtupID<3000){
+	if (!stoi(isTraining)) continue;
+      }else{
+	if (stoi(isTraining)) continue;
+      }
 
       eOverP *= response;
 
