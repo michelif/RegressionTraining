@@ -487,7 +487,7 @@ int main(int argc, char** argv) {
       testingTree->GetEntry(iev);
       if(genEnergy/scRawEnergy>10) continue;///FIXME maybe remove?
       // if (NtupIDVal < 5000) continue;
-      if(NtupID<3000){
+      if(NtupID<5000){
 	if (!stoi(isTraining)) continue;
       }else{
 	if (stoi(isTraining)) continue;
