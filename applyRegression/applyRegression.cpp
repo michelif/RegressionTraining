@@ -247,6 +247,24 @@ int main(int argc, char** argv) {
     std::vector<int> *     iPhiMod20=0;
     std::vector<int> * iEtaCoordinate=0;
     std::vector<int> *     iPhiCoordinate=0;
+
+    //do scalar branches also since we want to convert into hdf5 and vectors are skipped in conversion
+    float  clusterRawEnergy_0;
+    float  clusterRawEnergy_1;
+    float  clusterRawEnergy_2;
+    float  clusterDPhiToSeed_0;
+    float  clusterDPhiToSeed_1;
+    float  clusterDPhiToSeed_2;
+    float  clusterDEtaToSeed_0;
+    float  clusterDEtaToSeed_1;
+    float  clusterDEtaToSeed_2;
+    int      iEtaMod5_int;
+    int      iPhiMod2_int;
+    int      iEtaMod20_int;
+    int      iPhiMod20_int;
+    int  iEtaCoordinate_int;
+    int      iPhiCoordinate_int;
+
     float scPreshowerEnergy;
     float trkMomentumRelError;
     float trkMomentum;
@@ -376,6 +394,24 @@ int main(int argc, char** argv) {
 	friendtree->Branch("iPhiMod2", &iPhiMod2);
 	friendtree->Branch("iEtaMod20", &iEtaMod20);
 	friendtree->Branch("iPhiMod20", &iPhiMod20);
+	//do scalar branches also since we want to convert into hdf5 and vectors are skipped in conversion
+	friendtree->Branch("clusterRawEnergy_0", &clusterRawEnergy_0,"clusterRawEnergy_0/F");
+	friendtree->Branch("clusterRawEnergy_1", &clusterRawEnergy_1,"clusterRawEnergy_1/F");
+	friendtree->Branch("clusterRawEnergy_2", &clusterRawEnergy_2,"clusterRawEnergy_2/F");
+	friendtree->Branch("clusterDPhiToSeed_0", &clusterDPhiToSeed_0,"clusterDPhiToSeed_0/F");
+	friendtree->Branch("clusterDPhiToSeed_1", &clusterDPhiToSeed_1,"clusterDPhiToSeed_1/F");
+	friendtree->Branch("clusterDPhiToSeed_2", &clusterDPhiToSeed_2,"clusterDPhiToSeed_2/F");
+	friendtree->Branch("clusterDEtaToSeed_0", &clusterDEtaToSeed_0,"clusterDEtaToSeed_0/F");
+	friendtree->Branch("clusterDEtaToSeed_1", &clusterDEtaToSeed_1,"clusterDEtaToSeed_1/F");
+	friendtree->Branch("clusterDEtaToSeed_2", &clusterDEtaToSeed_2,"clusterDEtaToSeed_2/F");
+	friendtree->Branch("iEtaMod5_int", &iEtaMod5_int, "iEtaMod5_int/I");
+	friendtree->Branch("iPhiMod2_int", &iPhiMod2_int, "iPhiMod2_int/I");
+	friendtree->Branch("iEtaMod20_int", &iEtaMod20_int, "iEtaMod20_int/I");
+	friendtree->Branch("iPhiMod20_int", &iPhiMod20_int, "iPhiMod20_int/I");
+	friendtree->Branch("iEtaCoordinate_int", &iEtaCoordinate_int,"iEtaCoordinate_int/I");
+	friendtree->Branch("iPhiCoordinate_int", &iPhiCoordinate_int,"iPhiCoordinate_int/I");
+
+
 
         friendtree->Branch("scPreshowerEnergy", &scPreshowerEnergy, "scPreshowerEnergy/F" );
         friendtree->Branch("trkMomentumRelError", &trkMomentumRelError, "trkMomentumRelError/F" );
@@ -428,7 +464,7 @@ int main(int argc, char** argv) {
 
 
     for (Long64_t iev=0; iev<testingTree->GetEntries(); ++iev) {
-      if(debug)      if (iev>100) break; //running only on 100 events if debug
+      if(debug)      if (iev>1000) break; //running only on 1000 events if debug
       response = 0.;
       resolution = 0.;
       
@@ -496,7 +532,30 @@ int main(int argc, char** argv) {
       eOverP *= response;
 
       if (usePtWeightCut) ptWeightCut = ( ptWeightFunction->Eval(genPt) > randomNumber.Rndm() ) ? 1 : 0 ;
-      
+
+      for (int j=0;j<2;++j){
+	//do scalar branches also since we want to convert into hdf5 and vectors are skipped in conversion
+	clusterRawEnergy_0=clusterRawEnergy->at(0);
+	clusterRawEnergy_1=clusterRawEnergy->at(1);
+	clusterRawEnergy_2=clusterRawEnergy->at(2);
+
+	clusterDPhiToSeed_0=clusterDPhiToSeed->at(0);
+	clusterDPhiToSeed_1=clusterDPhiToSeed->at(1);
+	clusterDPhiToSeed_2=clusterDPhiToSeed->at(2);
+
+	clusterDEtaToSeed_0=clusterDEtaToSeed->at(0);
+	clusterDEtaToSeed_1=clusterDEtaToSeed->at(1);
+	clusterDEtaToSeed_2=clusterDEtaToSeed->at(2);
+
+	iEtaMod5_int=iEtaMod5->at(0);
+	iPhiMod2_int=iPhiMod2->at(0);
+	iEtaMod20_int=iEtaMod20->at(0);
+	iPhiMod20_int=iPhiMod20->at(0);
+	iEtaCoordinate_int=iEtaCoordinate->at(0);
+	iPhiCoordinate_int=iPhiCoordinate->at(0);
+
+	
+      }
 
       friendtree->Fill();
       
