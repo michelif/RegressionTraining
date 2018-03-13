@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import root_pandas as rpd
 
-name='Ntup_10Nov_Photon_testing_allvar.root'
+name='Ntup_10Nov_Photon_training_allvars.root'
 
 df = rpd.read_root('ntuples_NN/'+name,'een_analyzer/correction')
 
